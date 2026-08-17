@@ -1,4 +1,4 @@
-# linkhealth-intake-triage-dsh (plugin)
+# dsh-triage-plugin
 
 Self-contained **DeepSeek Harness (DSH)** plugin packaging of the LinkHealth
 intake-triage system: one Skill (hub) that classifies/scores/routes an enquiry, three
@@ -7,8 +7,9 @@ backstop** — the DSH analogue of the Claude Code `PostToolUse` hook — that b
 triage-log write violating `phi_involved ⇒ requires_human_review`, independent of the
 plugin's install location.
 
-This is the DSH sibling of `triage-claude-plugin/` (Claude Code). Same system, same
-rule set, different harness: DSH plugins are **npm packages that declare a
+This is the DSH sibling of `triage-claude-plugin/` (Claude Code), which lives in the
+[`linkhealth-triage`](https://github.com/fmlin0429712024/linkhealth-triage) repo. Same
+system, same rule set, different harness: DSH plugins are **npm packages that declare a
 `dsh.bundle` patch layer** and are installed into a profile with `dsh plugin`.
 
 ## Contents
@@ -25,7 +26,8 @@ examples/synthetic_enquiries.jsonl   12 sample enquiries for a live demo
 ```
 
 `examples/` is demo data only, not a test harness — for automated grading against
-`expected_*` labels, use `data/eval_harness.py` in the source repo (root `README.md`),
+`expected_*` labels, use `data/eval_harness.py` in the
+[`linkhealth-triage`](https://github.com/fmlin0429712024/linkhealth-triage) source repo,
 which isn't bundled here since it depends on the `claude` CLI and repo-relative paths.
 
 ## What it registers (and how it works)
@@ -71,7 +73,7 @@ as-is**. Append one `insert` to the profile's user patch layer
 ```yaml
 - insert:
     - id: linkhealth-intake-triage
-      name: '/absolute/path/to/triage-dsh-plugin/lib/index.js'
+      name: '/absolute/path/to/dsh-triage-plugin/lib/index.js'
       config:
         logPath: 'data/triage_log.jsonl'
 ```
@@ -89,10 +91,10 @@ pnpm). Install from a local checkout or from a git/npm spec:
 
 ```sh
 # from this repo (the plugin folder is a pnpm-installable package)
-dsh plugin --profile web add /absolute/path/to/triage-dsh-plugin
+dsh plugin --profile web add /absolute/path/to/dsh-triage-plugin
 
 # or by npm/git spec, e.g.
-dsh plugin --profile web add linkhealth-intake-triage-dsh@latest
+dsh plugin --profile web add dsh-triage-plugin@latest
 ```
 
 `dsh plugin` initializes the profile on first use, installs the package with pnpm, and
@@ -110,7 +112,7 @@ To verify the composed tree without booting:
 dsh --profile <name> --dump-config
 ```
 
-Uninstall: `dsh plugin --profile <name> remove linkhealth-intake-triage-dsh`.
+Uninstall: `dsh plugin --profile <name> remove dsh-triage-plugin`.
 
 ## Usage
 
@@ -136,12 +138,14 @@ redundant; if you change the rule, change all three.
 Standalone check:
 
 ```sh
-python3 triage-dsh-plugin/scripts/validate_triage_log.py path/to/triage_log.jsonl
+python3 plugins/dsh-triage-plugin/scripts/validate_triage_log.py path/to/triage_log.jsonl
 ```
 
 ## Source of truth
 
-This is a packaged copy for portability/distribution. The source project (architecture
-doc `docs/PRD.md`, synthetic eval set, full test suite) lives at the repo root — see the
-top-level `README.md`. The scoring rubric lives only in `skills/intake-triage/SKILL.md`;
-don't duplicate it elsewhere.
+This is a packaged copy for portability/distribution, living here as part of the
+`linkhealth-dsh-platform` DSH plugin monorepo. The source project (architecture doc
+`docs/PRD.md`, synthetic eval set, full test suite) lives in the
+[`linkhealth-triage`](https://github.com/fmlin0429712024/linkhealth-triage) repo. The
+scoring rubric lives only in `skills/intake-triage/SKILL.md`; don't duplicate it
+elsewhere.

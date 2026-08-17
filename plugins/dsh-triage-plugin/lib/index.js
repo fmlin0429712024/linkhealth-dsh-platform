@@ -1,7 +1,7 @@
-// linkhealth-intake-triage-dsh — the DSH (DeepSeek Harness) plugin entry.
+// dsh-triage-plugin — the DSH (DeepSeek Harness) plugin entry.
 //
 // This module is loaded by the Cordis loader as one bundle entry
-// (`name: 'linkhealth-intake-triage-dsh'` in cordis.patch.yml). Its `apply()`
+// (`name: 'dsh-triage-plugin'` in cordis.patch.yml). Its `apply()`
 // registers everything the LinkHealth intake-triage system needs against the
 // harness services it finds at boot:
 //

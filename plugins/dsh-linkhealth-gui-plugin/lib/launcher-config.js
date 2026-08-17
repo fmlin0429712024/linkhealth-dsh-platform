@@ -1,4 +1,4 @@
-// linkhealth-gui-plugin — pure logic (single source of truth).
+// dsh-linkhealth-gui-plugin — pure logic (single source of truth).
 //
 // This module is the BEHAVIOUR CONTRACT for the front-door data:
 //   - capability-list schema + defaults (PRD FR3/FR5)

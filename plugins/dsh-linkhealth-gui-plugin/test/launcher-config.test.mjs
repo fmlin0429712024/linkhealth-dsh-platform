@@ -1,4 +1,4 @@
-// Unit tests for linkhealth-gui-plugin pure logic (docs/TASKS-gui-plugin.md §2).
+// Unit tests for dsh-linkhealth-gui-plugin pure logic (docs/TASKS-gui-plugin.md §2).
 // Zero dependencies: node:test + node:assert. Run: node --test test/
 //
 // These tests are the BEHAVIOUR CONTRACT for the launcher/brand logic. The

@@ -1,7 +1,7 @@
-// linkhealth-gui-plugin — browser half (client bundle).
+// dsh-linkhealth-gui-plugin — browser half (client bundle).
 //
 // Registered by the web surface because package.json declares
-// `dsh.client.platform: "web"`; served as /plugins/linkhealth-gui/client.js
+// `dsh.client.platform: "web"`; served as /plugins/dsh-linkhealth-gui-plugin/client.js
 // and executed as a `window.__ModuleLoader__.load({ id, factory })` module.
 //
 // What it does (PRD-gui-plugin.md §6):
@@ -23,7 +23,7 @@
 // are returned from apply(), and unload restores the stock UI.
 
 window.__ModuleLoader__.load({
-  id: 'linkhealth-gui-plugin',
+  id: 'dsh-linkhealth-gui-plugin',
   factory: (require) => {
     const React = require('react')
 

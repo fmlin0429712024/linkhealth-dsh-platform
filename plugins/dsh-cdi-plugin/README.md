@@ -28,17 +28,20 @@ duplicate the catalog.
 ## Layout
 
 ```
-packages/
-  dsh-cdi-plugin/           # this plugin (host half)
+plugins/
+  dsh-cdi-plugin/
     package.json            # Cordis plugin package manifest (+ dsh.bundle.patch)
     cordis.patch.yml        # bundle patch: inserts the cdi-plugin row
-    lib/index.js            # plugin body: name / inject / Config / apply
+    lib/index.js            # host half: name / inject / Config / apply
+    lib/client.js           # client half (Step 2, not started yet) — exports["./client"]
     tools/query_deterministic_rule.py   # copy of the POC rule tool (stdlib only)
     data/                   # bundled SOP stores + synthetic gold sets
     rules/synthetic-audit-rules.md      # illustrative rules (not policy)
     skills/<name>/SKILL.md  # packaged snapshot of the 8 CDI skills
-  cdi-gui/                  # Step 2: client-half UI plugin (placeholder)
 ```
+
+Host and client live in **one package** (`.` = host, `./client` = client), the
+same pattern `dsh-linkhealth-gui-plugin` uses — not two separate packages.
 
 > Originally developed at
 > `clinical-documentation-audit-poc/dsh-plugins/cdi`; this copy lives here as
@@ -54,11 +57,11 @@ process restarted. Two equivalent routes:
 ```sh
 # Route 1 — pnpm (needs pnpm on PATH)
 cd ~/.dsh/profiles/web
-pnpm add file:/Users/fmlin/Documents/linkhealth-dsh-platform/packages/dsh-cdi-plugin
+pnpm add file:/Users/fmlin/Documents/linkhealth-dsh-platform/plugins/dsh-cdi-plugin
 # (the `dsh plugin --profile web add ...` wrapper also reconciles bundles automatically)
 
 # Route 2 — manual symlink (no pnpm needed), plus a package.json edit
-ln -s /Users/fmlin/Documents/linkhealth-dsh-platform/packages/dsh-cdi-plugin \
+ln -s /Users/fmlin/Documents/linkhealth-dsh-platform/plugins/dsh-cdi-plugin \
       ~/.dsh/profiles/web/node_modules/dsh-cdi-plugin
 # then add "dsh-cdi-plugin" to dependencies and to dsh.profile.bundles
 # in ~/.dsh/profiles/web/package.json
@@ -79,7 +82,7 @@ resolves the plugin's own imports from the repo (not the profile). The
 plugin therefore carries one dev-only wiring symlink:
 
 ```
-packages/dsh-cdi-plugin/node_modules/@deepseek-ai -> ~/.dsh/profiles/node_modules/@deepseek-ai
+plugins/dsh-cdi-plugin/node_modules/@deepseek-ai -> ~/.dsh/profiles/node_modules/@deepseek-ai
 ```
 
 That target is the dsh installation's flat module fallback (one symlink per
@@ -89,8 +92,8 @@ plugin's real location. Re-create it after a clean checkout or a dsh
 reinstall:
 
 ```sh
-mkdir -p packages/dsh-cdi-plugin/node_modules
-ln -sfn ~/.dsh/profiles/node_modules/@deepseek-ai packages/dsh-cdi-plugin/node_modules/@deepseek-ai
+mkdir -p plugins/dsh-cdi-plugin/node_modules
+ln -sfn ~/.dsh/profiles/node_modules/@deepseek-ai plugins/dsh-cdi-plugin/node_modules/@deepseek-ai
 ```
 
 (`node_modules` here is git-ignored — machine-specific wiring.)
@@ -124,7 +127,7 @@ tools/query_deterministic_rule.py`).
 - `skills/` is a **snapshot**: the source of truth is
   `clinical-documentation-audit-poc`'s `.agents/skills` (a separate repo from
   this one). When those change, re-copy
-  (`cp -r .agents/skills/*/SKILL.md packages/dsh-cdi-plugin/skills/` per
+  (`cp -r .agents/skills/*/SKILL.md plugins/dsh-cdi-plugin/skills/` per
   skill, run from `clinical-documentation-audit-poc`, then copy the result
   into this repo), keeping `.agents`, `.claude`, and this plugin's snapshot
   identical.
@@ -132,9 +135,11 @@ tools/query_deterministic_rule.py`).
 
 ## Next: Step 2 (preview)
 
-A sibling package, `packages/cdi-gui`, will add a **client half** (a
-browser bundle exporting `./client`) that registers the CDI domain UI into
-the shell's slots: audit-finding cards in `conversation`, evidence/rule
-detail in `details`, a human review workbench in `shell.overlay`, and CDI
-settings in `settings.plugins.tab`. Same host logic, enterprise-flavored
-UI.
+`lib/client.js`, exported as `./client` from this same package (not a
+separate package — see "Layout" above), will add a **client half**: a
+browser bundle that registers the CDI domain UI into the shell's slots:
+audit-finding cards in `conversation`, evidence/rule detail in `details`, a
+human review workbench in `shell.overlay`, and CDI settings in
+`settings.plugins.tab`. Same host logic, enterprise-flavored UI. Not started
+yet — `package.json` will need a `dsh.client.platform` declaration and an
+`exports["./client"]` entry added once this lands.

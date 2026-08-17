@@ -1,5 +1,5 @@
 {
-  "name": "linkhealth-intake-triage-dsh",
+  "name": "dsh-triage-plugin",
   "version": "1.0.0",
   "description": "DeepSeek Harness (DSH) plugin packaging of the LinkHealth intake-triage system: a hub skill that classifies/scores/routes inbound healthcare-sector business enquiries, three spoke role prompts that draft scoping notes, and a deterministic guardrail backstop that blocks any triage-log write violating phi_involved => requires_human_review.",
   "type": "module",
@@ -39,8 +39,8 @@
     "email": "fmlin0429712024@gmail.com"
   },
   "license": "MIT",
-  "homepage": "https://github.com/fmlin0429712024/linkhealth-triage",
-  "repository": "https://github.com/fmlin0429712024/linkhealth-triage",
+  "homepage": "https://github.com/fmlin0429712024/linkhealth-dsh-platform",
+  "repository": "https://github.com/fmlin0429712024/linkhealth-dsh-platform",
   "engines": {
     "node": ">=20"
   }

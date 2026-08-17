@@ -17,12 +17,15 @@ this repo only carries the DSH plugin layer:
 
 ## What's here
 
-| Package | Plane | What it does |
+Every plugin package follows the `dsh-<domain>-plugin` naming convention, and
+each bundles its host and client halves as one package (`.` / `./client`)
+rather than splitting them across separate packages.
+
+| Package | Plane(s) | What it does |
 | --- | --- | --- |
-| [`packages/triage-dsh-plugin`](packages/triage-dsh-plugin) (`linkhealth-intake-triage-dsh`) | host | Classifies/scores/routes inbound business enquiries; hub skill + 3 spoke role prompts + a deterministic guardrail backstop (`phi_involved` ⇒ `requires_human_review`, enforced in code independent of the model). |
-| [`packages/linkhealth-gui-plugin`](packages/linkhealth-gui-plugin) | client | Branded front door for the DSH web UI — theme, sidebar capability launcher, Settings showcase. Purely additive/reversible; no business-plugin coupling. |
-| [`packages/dsh-cdi-plugin`](packages/dsh-cdi-plugin) | host | Deterministic SOP-rule evaluation tools for CDI auditing, bundled SQLite rule stores, synthetic gold sets, and a packaged skills snapshot. |
-| [`packages/cdi-gui`](packages/cdi-gui) | client (placeholder) | Step 2 of the CDI-on-DSH roadmap — the client half for the CDI domain UI. Not started yet. |
+| [`plugins/dsh-triage-plugin`](plugins/dsh-triage-plugin) | host | Classifies/scores/routes inbound business enquiries; hub skill + 3 spoke role prompts + a deterministic guardrail backstop (`phi_involved` ⇒ `requires_human_review`, enforced in code independent of the model). |
+| [`plugins/dsh-cdi-plugin`](plugins/dsh-cdi-plugin) | host (client half planned, not started) | Deterministic SOP-rule evaluation tools for CDI auditing, bundled SQLite rule stores, synthetic gold sets, and a packaged skills snapshot. |
+| [`plugins/dsh-linkhealth-gui-plugin`](plugins/dsh-linkhealth-gui-plugin) | client | Branded front door for the DSH web UI — theme, sidebar capability launcher, Settings showcase. Purely additive/reversible; presents both capabilities above without importing either (zero business coupling). |
 
 All data bundled in this repo (enquiry examples, SOP rule stores, patient gold
 sets) is **synthetic/fictional** — no real patient, provider, or client data.
@@ -65,7 +68,7 @@ pnpm install
 pnpm test   # runs each package's test suite where one exists
 ```
 
-Only `linkhealth-gui-plugin` currently ships automated tests
+Only `dsh-linkhealth-gui-plugin` currently ships automated tests
 (`node --test`, zero dependencies). The other packages are verified via the
 manual smoke checklists documented in their own READMEs.
 

@@ -1,5 +1,5 @@
 {
-  "name": "linkhealth-gui-plugin",
+  "name": "dsh-linkhealth-gui-plugin",
   "version": "0.1.0",
   "description": "LinkHealth Agents front door for the DeepSeek Harness web surface: brand theme, branded welcome, a config-driven capability launcher (Triage, CDI Audit), and a capability showcase. Presentation only — adds no business logic and imports no business plugin.",
   "type": "module",
@@ -39,5 +39,6 @@
     "name": "fmlin",
     "email": "fmlin0429712024@gmail.com"
   },
-  "repository": "https://github.com/fmlin0429712024/linkhealth-triage"
+  "homepage": "https://github.com/fmlin0429712024/linkhealth-dsh-platform",
+  "repository": "https://github.com/fmlin0429712024/linkhealth-dsh-platform"
 }

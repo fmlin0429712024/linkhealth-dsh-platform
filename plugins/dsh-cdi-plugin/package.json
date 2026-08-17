@@ -31,5 +31,7 @@
     "bundle": {
       "patch": "./cordis.patch.yml"
     }
-  }
+  },
+  "homepage": "https://github.com/fmlin0429712024/linkhealth-dsh-platform",
+  "repository": "https://github.com/fmlin0429712024/linkhealth-dsh-platform"
 }

@@ -1,4 +1,4 @@
-# The linkhealth-intake-triage-dsh bundle patch.
+# The dsh-triage-plugin bundle patch.
 #
 # A DSH bundle is an npm package whose package.json declares
 # `"dsh": { "bundle": { "patch": "./cordis.patch.yml" } }`. This patch layer
@@ -6,7 +6,7 @@
 # precede this one in `dsh.profile.bundles`), and before the profile's own
 # `cordis.patch.yml`.
 #
-# This plugin adds exactly ONE entry: the `linkhealth-intake-triage-dsh`
+# This plugin adds exactly ONE entry: the `dsh-triage-plugin`
 # package itself, whose `lib/index.js` registers everything the system needs
 # against the harness services it finds at boot:
 #
@@ -28,6 +28,6 @@
 
 - insert:
     - id: linkhealth-intake-triage
-      name: 'linkhealth-intake-triage-dsh'
+      name: 'dsh-triage-plugin'
       config:
         logPath: 'data/triage_log.jsonl'

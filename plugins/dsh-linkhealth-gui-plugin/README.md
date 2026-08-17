@@ -1,4 +1,4 @@
-# linkhealth-gui-plugin
+# dsh-linkhealth-gui-plugin
 
 The **LinkHealth Agents front door** — a client-side DeepSeek Harness (DSH)
 plugin that brands the web surface and exposes the product line's capabilities
@@ -25,7 +25,7 @@ patch rows restores the stock UI).
    resolver can reach it:
 
    ```sh
-   ln -s /absolute/path/to/linkhealth-gui-plugin ~/.dsh/profiles/<profile>/node_modules/linkhealth-gui-plugin
+   ln -s /absolute/path/to/dsh-linkhealth-gui-plugin ~/.dsh/profiles/<profile>/node_modules/dsh-linkhealth-gui-plugin
    ```
 
 2. Append the entry to the profile's user patch layer
@@ -34,7 +34,7 @@ patch rows restores the stock UI).
    ```yaml
    - insert:
        - id: linkhealth-gui
-         name: 'linkhealth-gui-plugin'
+         name: 'dsh-linkhealth-gui-plugin'
          config:
            headline: 'LinkHealth Agents'
            placeholder: 'Triage an enquiry, audit documentation — or describe what you need'
@@ -64,7 +64,7 @@ To remove: delete the `insert` block (and the `node_modules` link).
 ## Testing
 
 ```sh
-cd linkhealth-gui-plugin
+cd plugins/dsh-linkhealth-gui-plugin
 node --test          # 22 unit tests for the pure logic (zero deps)
 ```
 

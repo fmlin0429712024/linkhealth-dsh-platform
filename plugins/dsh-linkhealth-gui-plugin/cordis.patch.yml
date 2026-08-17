@@ -1,4 +1,4 @@
-# The linkhealth-gui-plugin bundle patch: ONE entry for the LinkHealth Agents
+# The dsh-linkhealth-gui-plugin bundle patch: ONE entry for the LinkHealth Agents
 # front door.
 #
 # The entry is a client-side plugin: the package declares
@@ -13,7 +13,7 @@
 
 - insert:
     - id: linkhealth-gui
-      name: 'linkhealth-gui-plugin'
+      name: 'dsh-linkhealth-gui-plugin'
       config:
         headline: 'LinkHealth Agents'
         placeholder: 'Triage an enquiry, audit documentation — or describe what you need'
