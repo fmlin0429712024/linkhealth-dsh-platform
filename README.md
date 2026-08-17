@@ -88,14 +88,21 @@ This is a [pnpm workspace](https://pnpm.io/workspaces) monorepo.
 
 ```sh
 pnpm install
-pnpm test   # runs each package's test suite where one exists
+pnpm test            # runs each package's test suite where one exists
+pnpm test:contract   # plugin contract self-check (naming, paths, exports, tests)
 ```
 
-`dsh-triage-plugin` and `dsh-linkhealth-gui-plugin` ship automated tests
-(`pnpm test` runs both — `node --test` for the GUI plugin's pure logic,
-`python3` for the triage guardrail script, zero external dependencies
-either way). `dsh-cdi-plugin` is verified via the manual smoke checklist in
-its own README.
+All three plugins ship automated tests, run by CI on **every PR and push**
+(`pnpm test` — `node --test` for the GUI plugin's pure logic, `python3` for
+the triage guardrail script and the CDI deterministic-rule tests, zero
+external dependencies). CI additionally runs the zero-dependency plugin
+contract check, so any new package under `plugins/` is validated
+automatically — **there is no per-plugin CI configuration**.
+
+**Adding a new plugin (including from contributors):** see
+[docs/plugin-development.md](docs/plugin-development.md) — the naming
+contract, the four testing tiers, the fork-PR secrets constraint, and how to
+wire a new plugin into the deployed profile.
 
 ## Deployment (GCP)
 

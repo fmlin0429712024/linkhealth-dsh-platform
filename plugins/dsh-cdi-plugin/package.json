@@ -6,6 +6,9 @@
   "description": "Synthetic CDI (clinical documentation integrity) auditing plugin for DeepSeek Harness — Step 1: pure host plugin, AS-IS GUI. Bundles the deterministic SOP-rule evaluation tools, the SQLite SOP stores, the synthetic gold sets, the audit rules, and a packaged copy of the CDI skills.",
   "license": "MIT",
   "main": "lib/index.js",
+  "scripts": {
+    "test": "python3 scripts/test_query_deterministic_rule.py"
+  },
   "exports": {
     ".": {
       "default": "./lib/index.js"

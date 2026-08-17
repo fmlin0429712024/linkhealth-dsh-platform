@@ -8,6 +8,7 @@
   "repository": "https://github.com/fmlin0429712024/linkhealth-dsh-platform",
   "scripts": {
     "test": "pnpm -r --if-present run test",
+    "test:contract": "node scripts/check-plugin-contract.mjs",
     "lint": "pnpm -r --if-present run lint"
   },
   "packageManager": "pnpm@9.0.0",

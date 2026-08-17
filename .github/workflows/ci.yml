@@ -17,3 +17,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
+      # Plugin contract self-check: every package under plugins/ must follow the
+      # repo conventions (naming, dsh declaration, referenced paths, README,
+      # test entry, Cordis exports). Zero-dependency — runs on fork PRs too.
+      - run: node scripts/check-plugin-contract.mjs
