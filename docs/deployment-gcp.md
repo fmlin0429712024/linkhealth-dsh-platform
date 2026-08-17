@@ -9,7 +9,8 @@ a symlink switch.
 
 **This repo is the single source of truth for the DSH plugins.** The deploy
 unit is built from `plugins/` here; nothing on the VM comes from the earlier
-explore workspaces (`linkhealth-triage`, `clinical-documentation-audit-poc`).
+explore workspaces ([`linkhealth-triage`](https://github.com/fmlin0429712024/linkhealth-triage),
+[`clinical-documentation-audit-poc`](https://github.com/fmlin0429712024/clinical-documentation-audit-poc)).
 
 ## How it works
 

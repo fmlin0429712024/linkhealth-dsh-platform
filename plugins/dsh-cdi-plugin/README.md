@@ -49,7 +49,8 @@ Host and client live in **one package** (`.` = host, `./client` = client), the
 same pattern `dsh-linkhealth-gui-plugin` uses — not two separate packages.
 
 > Originally developed at
-> `clinical-documentation-audit-poc/dsh-plugins/cdi`; this copy lives here as
+> [`clinical-documentation-audit-poc`](https://github.com/fmlin0429712024/clinical-documentation-audit-poc)`/dsh-plugins/cdi`;
+> this copy lives here as
 > part of the `linkhealth-dsh-platform` DSH plugin monorepo. See "Sync rules"
 > below for how the bundled skills/data/tools relate to that origin repo.
 
@@ -130,8 +131,8 @@ tools/query_deterministic_rule.py`).
 ## Sync rules
 
 - `skills/` is a **snapshot**: the source of truth is
-  `clinical-documentation-audit-poc`'s `.agents/skills` (a separate repo from
-  this one). When those change, re-copy
+  [`clinical-documentation-audit-poc`](https://github.com/fmlin0429712024/clinical-documentation-audit-poc)'s
+  `.agents/skills` (a separate repo from this one). When those change, re-copy
   (`cp -r .agents/skills/*/SKILL.md plugins/dsh-cdi-plugin/skills/` per
   skill, run from `clinical-documentation-audit-poc`, then copy the result
   into this repo), keeping `.agents`, `.claude`, and this plugin's snapshot

@@ -12,8 +12,8 @@ this repo only carries the DSH plugin layer:
 - [`linkhealth-triage`](https://github.com/fmlin0429712024/linkhealth-triage) —
   the intake-triage system (Claude Code Skill + Agents + guardrail hook is the
   core deliverable; DSH packaging is a PoC section there).
-- `clinical-documentation-audit-poc` — the CDI audit system and its `.agents/skills`
-  source of truth.
+- [`clinical-documentation-audit-poc`](https://github.com/fmlin0429712024/clinical-documentation-audit-poc) —
+  the CDI audit system and its `.agents/skills` source of truth.
 
 ## What's here
 
