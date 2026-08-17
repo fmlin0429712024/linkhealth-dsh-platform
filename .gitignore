@@ -9,8 +9,9 @@ __pycache__/
 CLAUDE.md
 .claude/
 
-# Machine-local DSH test home (contains a credentials copy — never commit)
+# Machine-local DSH test homes (contain credentials copies — never commit)
 .dsh-test-home/
+.dsh-e2e-home/
 
 # Runtime data written by plugins into the workspace root (e.g. triage log)
 /data/

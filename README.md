@@ -115,10 +115,14 @@ is provisioned and deployed exclusively from `plugins/` here:
   CLI, release layout, systemd unit).
 - `deploy/scripts/deploy.sh` — per-release: unpack → wire CDI module
   resolution → switch `current` symlink → restart → health check.
-- `.github/workflows/deploy.yml` — CI/CD: build the self-contained release
-  tarball from `plugins/`, upload, deploy.
-- [docs/deployment-gcp.md](docs/deployment-gcp.md) — the full playbook
-  (VM provisioning, secrets, port map, rollback).
+- `.github/workflows/deploy.yml` — CI/CD: **headless E2E gate** (real LLM
+  smoke of the plugins from this checkout) → build the self-contained release
+  tarball from `plugins/` → upload → deploy.
+- [docs/ci-cd.md](docs/ci-cd.md) — **the one CI/CD playbook to follow**:
+  PR flow, push flow, the E2E gate, deploy/rollback, secrets, new-plugin
+  onboarding, troubleshooting.
+- [docs/deployment-gcp.md](docs/deployment-gcp.md) — VM provisioning details
+  (bootstrap, static IP, port map).
 
 ## License
 

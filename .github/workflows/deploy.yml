@@ -10,7 +10,31 @@ on:
   workflow_dispatch: {}
 
 jobs:
+  # Pre-deploy gate: boot a real DSH headless profile with the plugins from
+  # this checkout and run fixed LLM tasks (CDI rule, triage flow, guardrail).
+  # If any fails, the release is not deployed. Needs the DeepSeek key, so this
+  # runs only on same-repo pushes / manual dispatch — never on fork PRs.
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install the dsh CLI
+        run: npm install -g @deepseek-ai/dsh
+      - name: Provision E2E home (credentials from the repo secret)
+        run: |
+          mkdir -p .dsh-e2e-home
+          printf 'DEEPSEEK_API_KEY: %s\n' "${{ secrets.DEEPSEEK_API_KEY }}" > .dsh-e2e-home/.credentials.yaml
+          chmod 600 .dsh-e2e-home/.credentials.yaml
+      - name: E2E smoke (headless, real LLM)
+        run: bash scripts/e2e-smoke.sh
+        env:
+          DSH_HOME: ${{ github.workspace }}/.dsh-e2e-home
+
   deploy:
+    needs: e2e
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

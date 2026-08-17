@@ -50,12 +50,15 @@ PR opened (any source)            push to main
 |---|---|---|---|
 | L1 — deterministic logic | plugin's own `scripts/test_*.py` / `npm test` (guardrail, rule tools, pure UI logic) | free, <1s | PR + main |
 | L2 — plugin contract | `node scripts/check-plugin-contract.mjs`: naming, dsh declaration, referenced paths, README, test entry, Cordis exports | free, <1s | PR + main |
-| L3 — headless E2E (optional, future) | `dsh --profile headless "<task>"` — boot a real profile, run one task, assert the output markers | LLM tokens, ~30–60s | push-to-main / workflow_dispatch (needs `DEEPSEEK_API_KEY`) |
+| L3 — headless E2E | `scripts/e2e-smoke.sh`: boot a real headless DSH profile with the plugins from the checkout, run fixed LLM tasks, assert output markers | LLM tokens, ~2–3 min | push to main — **pre-deploy gate in deploy.yml** |
 | L4 — deploy verification | the Deploy workflow's health check on the VM | free | push to main (deploy) |
 
 **Why fork PRs only get L1+L2**: GitHub does not expose repository secrets to
 pull requests from forks. Any LLM-backed test (L3) needs the DeepSeek API
 key, so it can only run on same-repo pushes or manual dispatch.
+
+The whole flow is documented end-to-end in **[ci-cd.md](ci-cd.md)** — follow
+that document and every new plugin gets the full pipeline automatically.
 
 ## Local development loop
 
@@ -65,8 +68,8 @@ pnpm test                 # all plugin tests
 pnpm test:contract        # contract self-check
 # full local stack (all plugins from this repo):
 dsh --profile linkhealth2 --port 3083
-# headless single-task run (L3 prototype):
-dsh --profile headless "list the CDI rules with cdi_list_rules"
+# the exact E2E gate CI runs (needs DEEPSEEK_API_KEY in the test home):
+DSH_HOME=$PWD/.dsh-e2e-home bash scripts/e2e-smoke.sh
 ```
 
 ## Wiring a new plugin into the deployed profile
