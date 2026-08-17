@@ -17,6 +17,5 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-      # Switch to `pnpm install --frozen-lockfile` once pnpm-lock.yaml is committed.
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: pnpm test
