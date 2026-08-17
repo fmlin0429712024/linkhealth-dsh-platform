@@ -43,13 +43,11 @@ window.__ModuleLoader__.load({
           label: 'Triage',
           description: 'Classify, score, and route inbound business enquiries.',
         },
-        // When dsh-cdi-plugin is integrated, append its entry here (and to the
-        // profile patch) — no other change needed.
-        // {
-        //   id: 'cdi',
-        //   label: 'CDI Audit',
-        //   description: 'Governed clinical-documentation audit against SOP rules.',
-        // },
+        {
+          id: 'cdi',
+          label: 'CDI Audit',
+          description: 'Governed clinical-documentation audit against SOP rules.',
+        },
       ],
     }
     const DEFAULTS = {

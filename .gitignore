@@ -8,3 +8,9 @@ __pycache__/
 # Local-only agent tooling — never a public deliverable of this repo
 CLAUDE.md
 .claude/
+
+# Machine-local DSH test home (contains a credentials copy — never commit)
+.dsh-test-home/
+
+# Runtime data written by plugins into the workspace root (e.g. triage log)
+/data/

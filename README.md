@@ -97,6 +97,22 @@ pnpm test   # runs each package's test suite where one exists
 either way). `dsh-cdi-plugin` is verified via the manual smoke checklist in
 its own README.
 
+## Deployment (GCP)
+
+This repo is the **single source of truth** for the DSH plugins — the GCP VM
+is provisioned and deployed exclusively from `plugins/` here:
+
+- `deploy/profile-linkhealth/` — the deployable profile (triage + CDI + GUI
+  patch rows, relative paths).
+- `deploy/scripts/bootstrap-vm.sh` — one-time VM provisioning (Node 22, dsh
+  CLI, release layout, systemd unit).
+- `deploy/scripts/deploy.sh` — per-release: unpack → wire CDI module
+  resolution → switch `current` symlink → restart → health check.
+- `.github/workflows/deploy.yml` — CI/CD: build the self-contained release
+  tarball from `plugins/`, upload, deploy.
+- [docs/deployment-gcp.md](docs/deployment-gcp.md) — the full playbook
+  (VM provisioning, secrets, port map, rollback).
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

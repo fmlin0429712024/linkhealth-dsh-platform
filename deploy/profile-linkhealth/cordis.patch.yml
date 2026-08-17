@@ -1,0 +1,31 @@
+# LinkHealth VAS profile — the deployable unit.
+#
+# Source of truth: github.com/fmlin0429712024/linkhealth-dsh-platform
+# This is the CI/CD copy: paths are RELATIVE to the profile directory, so the
+# whole release directory (profile + plugins) is self-contained and identical
+# on every machine. Built by .github/workflows/deploy.yml from this repo's
+# plugins/ tree.
+
+# ── Intake triage (host: hub skill + spokes + guardrail backstop) ────────────
+- insert:
+    - id: linkhealth-intake-triage
+      name: './plugins/dsh-triage-plugin/lib/index.js'
+      config:
+        logPath: 'data/triage_log.jsonl'
+
+# ── CDI audit (host: deterministic SOP-rule tools + bundled stores/skills) ──
+# bundledSkills: true — the release has no repo `.agents/skills` tree, so the
+# plugin serves its own packaged skills snapshot.
+- insert:
+    - id: cdi-plugin
+      name: './plugins/dsh-cdi-plugin/lib/index.js'
+      config:
+        bundledSkills: true
+
+# ── LinkHealth Agents front door (client: brand theme + capability launcher) ─
+# Loaded by name; the release build symlinks it into profile/node_modules.
+- insert:
+    - id: linkhealth-gui
+      name: 'dsh-linkhealth-gui-plugin'
+      config:
+        headline: 'LinkHealth Agents'

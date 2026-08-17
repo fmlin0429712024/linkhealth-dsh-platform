@@ -1,0 +1,46 @@
+name: Deploy LinkHealth VAS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'plugins/**'
+      - 'deploy/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build the deploy unit (self-contained profile + plugins)
+        run: |
+          set -euo pipefail
+          SHA="${GITHUB_SHA::7}"
+          mkdir -p dist/profile/plugins dist/profile/node_modules
+          cp deploy/profile-linkhealth/package.json deploy/profile-linkhealth/cordis.patch.yml dist/profile/
+          cp -r plugins/dsh-triage-plugin dist/profile/plugins/
+          cp -r plugins/dsh-cdi-plugin dist/profile/plugins/
+          cp -r plugins/dsh-linkhealth-gui-plugin dist/profile/plugins/
+          # relative symlink — keeps the release directory self-contained
+          ln -s ../plugins/dsh-linkhealth-gui-plugin dist/profile/node_modules/dsh-linkhealth-gui-plugin
+          tar -czf "linkhealth-${SHA}.tar.gz" -C dist profile
+          echo "release=linkhealth-${SHA}.tar.gz" >> "$GITHUB_ENV"
+
+      - name: Upload release to the VM
+        run: |
+          # DEPLOY_SSH_KEY is the base64 of the private key (single line — paste-safe)
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" | base64 -d > /tmp/deploy_key && chmod 600 /tmp/deploy_key
+          scp -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+            "${{ env.release }}" \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/linkhealth/incoming/"
+
+      - name: Deploy (unpack → wire cdi → switch symlink → restart → verify)
+        run: |
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" | base64 -d > /tmp/deploy_key && chmod 600 /tmp/deploy_key
+          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "sudo bash /opt/linkhealth/scripts/deploy.sh '${{ env.release }}' '${{ secrets.DEEPSEEK_API_KEY }}'"
