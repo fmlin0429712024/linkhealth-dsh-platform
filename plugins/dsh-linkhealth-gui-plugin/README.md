@@ -1,19 +1,27 @@
 # dsh-linkhealth-gui-plugin
 
+**Status: early / paused.** Theme override and the pure config logic
+(schema, defaults, brand tokens — 22/22 tests) are done. The capability
+launcher and capability showcase below are UI-registration stubs, not yet
+wired up (tracked as TODO in `docs/TASKS-gui-plugin.md` §3.3–3.4) — treat
+this plugin as a work in progress, not ready to build on top of yet.
+
 The **LinkHealth Agents front door** — a client-side DeepSeek Harness (DSH)
 plugin that brands the web surface and exposes the product line's capabilities
 (Triage, CDI Audit) as first-class entries. **Presentation only**: it adds no
 business logic and imports no business plugin.
 
-Spec: `docs/PRD-gui-plugin.md` · tasks: `docs/TASKS-gui-plugin.md`.
+Spec and tasks (`docs/PRD-gui-plugin.md`, `docs/TASKS-gui-plugin.md`) live in the
+[`linkhealth-triage`](https://github.com/fmlin0429712024/linkhealth-triage) source
+repo, not bundled here.
 
 ## What it does
 
-| Piece | Registered as | Effect |
-|---|---|---|
-| Brand theme | `theme.overrideTokens` (light + dark, deep teal/blue) | global accents/brand colors |
-| Capability launcher | `sidebar.footer.action` (additive) | one entry per configured capability; click starts a session |
-| Capability showcase | `settings.section` (additive) | "LinkHealth Capabilities" cards with status |
+| Piece | Registered as | Effect | Status |
+|---|---|---|---|
+| Brand theme | `theme.overrideTokens` (light + dark, deep teal/blue) | global accents/brand colors | done |
+| Capability launcher | `sidebar.footer.action` (additive) | one entry per configured capability; click starts a session | TODO |
+| Capability showcase | `settings.section` (additive) | "LinkHealth Capabilities" cards with status | TODO |
 
 Design rules: **additive only** (no default component replaced), **config-driven**
 (a third capability is a config edit, not code), **reversible** (removing the
@@ -90,3 +98,10 @@ them in sync; the tests are the contract.
 - **`settings.section` is a single-select navigation**: a section's component
   renders only after its label ("LinkHealth Capabilities") is clicked — the
   capability cards live behind that tab, not on the settings landing view.
+
+## Source of truth
+
+This is a packaged copy living here as part of the `linkhealth-dsh-platform`
+DSH plugin monorepo. The spec, task breakdown, and edit history live in the
+[`linkhealth-triage`](https://github.com/fmlin0429712024/linkhealth-triage)
+repo.

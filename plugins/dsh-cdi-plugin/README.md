@@ -1,5 +1,10 @@
 # dsh-cdi-plugin
 
+**Status: active (host); client half not started.** Step 1 (host — tools,
+skills, bundled data) is implemented and manually verified (see "Verify"
+below); Step 2 (client UI, `./client`) is planned but has no code yet (see
+"Next: Step 2").
+
 **Step 1 of the CDI-on-DSH roadmap: a pure host plugin running on the AS-IS
 DSH GUI.** It packages the synthetic CDI (clinical documentation integrity)
 auditing domain for DeepSeek Harness — the deterministic SOP-rule evaluation

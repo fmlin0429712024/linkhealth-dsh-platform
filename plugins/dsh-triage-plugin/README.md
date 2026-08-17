@@ -1,5 +1,9 @@
 # dsh-triage-plugin
 
+**Status: active.** Host plugin fully implemented; 6/6 automated guardrail
+tests pass (`scripts/test_validate_triage_log.py`), plus a manual smoke
+checklist (`examples/demo-prompts.md`).
+
 Self-contained **DeepSeek Harness (DSH)** plugin packaging of the LinkHealth
 intake-triage system: one Skill (hub) that classifies/scores/routes an enquiry, three
 spoke role prompts (leads) that draft scoping notes, and a **deterministic guardrail
