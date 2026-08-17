@@ -53,6 +53,8 @@ if [ -n "$DEEPSEEK_KEY" ]; then
   mkdir -p /opt/linkhealth/dsh-home
   printf 'DEEPSEEK_API_KEY: %s\n' "$DEEPSEEK_KEY" > /opt/linkhealth/dsh-home/.credentials.yaml
   chmod 600 /opt/linkhealth/dsh-home/.credentials.yaml
+  # the dsh service reads this as the deploy user (not root)
+  chown "$SUDO_USER" /opt/linkhealth/dsh-home/.credentials.yaml
 fi
 
 echo "==> Restart service"

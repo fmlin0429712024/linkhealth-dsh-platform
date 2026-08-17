@@ -29,6 +29,9 @@ mkdir -p /opt/linkhealth/{incoming,releases,current,scripts}
 mkdir -p /opt/linkhealth/dsh-home/profiles
 # the deploy user (CI scp/ssh) owns incoming + scripts; releases/current stay root-owned
 chown -R "$DEPLOY_USER" /opt/linkhealth/incoming /opt/linkhealth/scripts
+# dsh runs as the deploy user with DSH_HOME=/opt/linkhealth/dsh-home: it must be
+# able to create profiles/node_modules (module fallback) and write credentials/sessions
+chown -R "$DEPLOY_USER" /opt/linkhealth/dsh-home
 
 echo "==> systemd unit"
 cat > /etc/systemd/system/linkhealth.service <<EOF
