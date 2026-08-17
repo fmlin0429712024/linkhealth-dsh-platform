@@ -59,9 +59,9 @@ too**. A PR is not mergeable until both are green.
 
 `deploy.yml` triggers on pushes to `main` touching `plugins/**`, `deploy/**`,
 or the workflows themselves (also via manual *Run workflow* dispatch).
-**Docs-only changes never trigger it**: `paths-ignore` excludes `**/*.md`,
-`docs/**`, and `.gitignore` — a README edit costs nothing in CI (the cheap
-`ci.yml` checks still run) but does not spin up the E2E gate or a deploy.
+**Docs-only changes never trigger it**: a `!**/*.md` exclusion inside `paths`
+means a README/docs edit only runs the cheap `ci.yml` checks — it does not
+spin up the E2E gate or a deploy.
 
 1. **e2e job — the pre-deploy gate.** Installs the dsh CLI, writes
    `DEEPSEEK_API_KEY` into a throwaway `$DSH_HOME`, then runs

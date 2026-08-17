@@ -8,12 +8,10 @@ on:
       - 'deploy/**'
       - '.github/workflows/deploy.yml'
       - 'scripts/e2e-smoke.sh'
-    paths-ignore:
-      # docs-only changes never trigger a deploy (or the E2E gate)
-      - '**/*.md'
-      - 'docs/**'
-      - '.gitignore'
-      - 'README.md'
+      # docs-only changes never trigger a deploy (or the E2E gate).
+      # NB: GitHub disallows combining `paths` with `paths-ignore`, so
+      # exclusion is expressed with the `!` prefix inside `paths`.
+      - '!**/*.md'
   workflow_dispatch: {}
 
 jobs:
