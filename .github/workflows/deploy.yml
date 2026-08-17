@@ -37,6 +37,11 @@ jobs:
           scp -i /tmp/deploy_key -o StrictHostKeyChecking=no \
             "${{ env.release }}" \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/linkhealth/incoming/"
+          # deploy.sh is VM-side tooling — ship it with every deploy (idempotent,
+          # so a freshly bootstrapped VM gets it without manual steps)
+          scp -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+            deploy/scripts/deploy.sh \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/linkhealth/scripts/deploy.sh"
 
       - name: Deploy (unpack → wire cdi → switch symlink → restart → verify)
         run: |
