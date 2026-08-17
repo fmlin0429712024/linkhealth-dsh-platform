@@ -4,6 +4,9 @@
   "description": "DeepSeek Harness (DSH) plugin packaging of the LinkHealth intake-triage system: a hub skill that classifies/scores/routes inbound healthcare-sector business enquiries, three spoke role prompts that draft scoping notes, and a deterministic guardrail backstop that blocks any triage-log write violating phi_involved => requires_human_review.",
   "type": "module",
   "main": "lib/index.js",
+  "scripts": {
+    "test": "python3 scripts/test_validate_triage_log.py"
+  },
   "exports": {
     ".": "./lib/index.js",
     "./validate": "./lib/validate.js"

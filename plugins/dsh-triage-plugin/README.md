@@ -21,14 +21,18 @@ lib/index.js                 Cordis plugin: registers skills, spokes, guardrail 
 lib/validate.js              shared guardrail validation (JS) used by the backstop and the tool
 skills/intake-triage/        the hub skill: classification + complexity scoring + routing decision
 agents/*.md                  automation-lead, data-lead, deployment-lead spoke role prompts
-scripts/validate_triage_log.py  standalone parity backstop (same rule set as lib/validate.js)
+scripts/validate_triage_log.py       standalone parity backstop (same rule set as lib/validate.js)
+scripts/test_validate_triage_log.py  offline test suite for the script above (no model calls)
 examples/synthetic_enquiries.jsonl   12 sample enquiries for a live demo
+examples/demo-prompts.md             3 ready-to-paste prompts: full flow / guardrail trip / hard block
 ```
 
-`examples/` is demo data only, not a test harness — for automated grading against
-`expected_*` labels, use `data/eval_harness.py` in the
+`examples/` is demo data for live/manual testing, not automated grading — for
+grading against `expected_*` labels, use `data/eval_harness.py` in the
 [`linkhealth-triage`](https://github.com/fmlin0429712024/linkhealth-triage) source repo,
 which isn't bundled here since it depends on the `claude` CLI and repo-relative paths.
+`scripts/test_validate_triage_log.py` **is** bundled and automated — it exercises the
+guardrail script directly, no model or `claude` CLI required.
 
 ## What it registers (and how it works)
 

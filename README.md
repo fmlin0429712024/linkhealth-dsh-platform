@@ -68,9 +68,11 @@ pnpm install
 pnpm test   # runs each package's test suite where one exists
 ```
 
-Only `dsh-linkhealth-gui-plugin` currently ships automated tests
-(`node --test`, zero dependencies). The other packages are verified via the
-manual smoke checklists documented in their own READMEs.
+`dsh-triage-plugin` and `dsh-linkhealth-gui-plugin` ship automated tests
+(`pnpm test` runs both — `node --test` for the GUI plugin's pure logic,
+`python3` for the triage guardrail script, zero external dependencies
+either way). `dsh-cdi-plugin` is verified via the manual smoke checklist in
+its own README.
 
 ## License
 

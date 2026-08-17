@@ -4,6 +4,9 @@
   "description": "LinkHealth Agents front door for the DeepSeek Harness web surface: brand theme, branded welcome, a config-driven capability launcher (Triage, CDI Audit), and a capability showcase. Presentation only — adds no business logic and imports no business plugin.",
   "type": "module",
   "main": "lib/index.js",
+  "scripts": {
+    "test": "node --test 'test/**/*.test.mjs'"
+  },
   "exports": {
     ".": "./lib/index.js",
     "./client": "./lib/client.js",
