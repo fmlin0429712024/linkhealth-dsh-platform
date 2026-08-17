@@ -163,3 +163,4 @@ Full details: [plugin-development.md](plugin-development.md) (dev contract),
   tasks); the VM costs ≈ $52/mo while running. Stop the VM when idle:
   `gcloud compute instances stop linkhealth-vm2`.
 - All bundled data is synthetic — no real patient/provider/client data.
+
