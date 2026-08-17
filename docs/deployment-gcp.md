@@ -115,7 +115,8 @@ The default SSH user is your local username, `fmlin` — same as VM1.)
 | `DEEPSEEK_API_KEY` | the DeepSeek key used by DSH on the VM |
 
 Set via the GitHub UI (Settings → Secrets and variables → Actions) or:
-`gh secret set <NAME> --repo fmlin0429712024/linkhealth-dsh-platform --body-file <file>`
+`gh secret set <NAME> --repo fmlin0429712024/linkhealth-dsh-platform < <value-file>`
+(gh reads the value from stdin; never put secret values in shell arguments.)
 
 ## Deploying
 

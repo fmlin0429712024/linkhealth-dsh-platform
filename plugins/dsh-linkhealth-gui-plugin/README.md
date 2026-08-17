@@ -1,10 +1,11 @@
 # dsh-linkhealth-gui-plugin
 
-**Status: early / paused.** Theme override and the pure config logic
-(schema, defaults, brand tokens — 22/22 tests) are done. The capability
-launcher and capability showcase below are UI-registration stubs, not yet
-wired up (tracked as TODO in `docs/TASKS-gui-plugin.md` §3.3–3.4) — treat
-this plugin as a work in progress, not ready to build on top of yet.
+**Status: active.** Brand theme override, the capability launcher
+(`sidebar.footer.action`), and the capability showcase (`settings.section`)
+are implemented and verified — the pure config logic is covered by 22/22
+unit tests. The built-in config ships **two capability cards: Triage and
+CDI Audit** (both host plugins live in the same repo, presented without
+importing either — zero business coupling).
 
 The **LinkHealth Agents front door** — a client-side DeepSeek Harness (DSH)
 plugin that brands the web surface and exposes the product line's capabilities
@@ -20,8 +21,8 @@ repo, not bundled here.
 | Piece | Registered as | Effect | Status |
 |---|---|---|---|
 | Brand theme | `theme.overrideTokens` (light + dark, deep teal/blue) | global accents/brand colors | done |
-| Capability launcher | `sidebar.footer.action` (additive) | one entry per configured capability; click starts a session | TODO |
-| Capability showcase | `settings.section` (additive) | "LinkHealth Capabilities" cards with status | TODO |
+| Capability launcher | `sidebar.footer.action` (additive) | one entry per configured capability; click starts a session | done |
+| Capability showcase | `settings.section` (additive) | "LinkHealth Capabilities" cards with status | done |
 
 Design rules: **additive only** (no default component replaced), **config-driven**
 (a third capability is a config edit, not code), **reversible** (removing the
