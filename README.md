@@ -1,10 +1,26 @@
 # linkhealth-dsh-platform
 
+![CI](https://github.com/fmlin0429712024/linkhealth-dsh-platform/actions/workflows/ci.yml/badge.svg)
+![Deploy](https://github.com/fmlin0429712024/linkhealth-dsh-platform/actions/workflows/deploy.yml/badge.svg)
+![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)
+
 DeepSeek Harness (DSH) plugins for [LinkHealth](https://github.com/fmlin0429712024)'s
 AI-enablement services for healthcare. This repo is the dedicated home for the
 **DSH packaging** of LinkHealth's capabilities — intake triage and clinical
 documentation integrity (CDI) auditing — built on the [Cordis](https://cordisjs.dev/)
 plugin runtime.
+
+## Quick start (3 steps)
+
+```sh
+git clone https://github.com/fmlin0429712024/linkhealth-dsh-platform.git
+cd linkhealth-dsh-platform && pnpm install && pnpm test   # unit + contract checks
+dsh --profile linkhealth2 --port 3083                     # full stack → http://127.0.0.1:3083
+```
+
+Everything is CI-tested (unit + contract + headless E2E gate) and
+auto-deployed to a GCP VM on every push to `main` — see
+[docs/ci-cd.md](docs/ci-cd.md).
 
 The core, non-DSH deliverables for each product line live in their own repos;
 this repo only carries the DSH plugin layer:
