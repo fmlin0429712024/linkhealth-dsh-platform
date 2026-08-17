@@ -1,0 +1,52 @@
+{
+  "dataset_notice": "Fully fictional mock data created solely for this public POC. Not derived from any patient, provider, or client system.",
+  "record_id": "SYN-ICHD-0001",
+  "patient": {
+    "synthetic_patient_id": "PT-SYN-1042",
+    "age_band": "60-69",
+    "care_modality": "in-center hemodialysis",
+    "primary_condition_label": "synthetic kidney-care scenario"
+  },
+  "clinical_treatments": [
+    {
+      "treatment_date": "2026-01-14",
+      "scheduled_minutes": 240,
+      "completed_minutes": 205,
+      "status": "completed_early",
+      "treatment_note": "Synthetic note: treatment ended early; fictional symptoms were addressed and the patient was stable at discharge.",
+      "follow_up_note": "Synthetic note: follow-up plan documented for the next treatment."
+    },
+    {
+      "treatment_date": "2026-01-28",
+      "scheduled_minutes": 240,
+      "completed_minutes": 236,
+      "status": "completed",
+      "treatment_note": "Synthetic note: at approximately 90 minutes into treatment, patient reported dizziness and blood pressure was recorded as low. Ultrafiltration rate was reduced and the patient was repositioned. A saline bolus was given per standing order. Blood pressure was reassessed 15 minutes later and had returned to baseline; symptoms resolved. Treatment continued and completed close to schedule.",
+      "follow_up_note": "Synthetic note: physician was notified of the event and the reassessment findings. Patient stable at discharge; standard follow-up plan documented for the next treatment."
+    },
+    {
+      "treatment_date": "2026-02-04",
+      "scheduled_minutes": 240,
+      "completed_minutes": 238,
+      "status": "completed",
+      "treatment_note": "Synthetic note: at approximately 100 minutes into treatment, patient reported dizziness and blood pressure was recorded as low. Ultrafiltration rate was reduced.",
+      "follow_up_note": "Synthetic note: patient monitored for the remainder of treatment."
+    },
+    {
+      "treatment_date": "2026-02-11",
+      "scheduled_minutes": 240,
+      "completed_minutes": 165,
+      "status": "completed_early",
+      "treatment_note": "Synthetic note: at approximately 165 minutes into treatment, patient stated they wanted to stop treatment and requested removal from dialysis, citing discomfort. Nurse discussed the risks of discontinuing treatment early with the patient, including potential complications, and offered to adjust comfort measures. Patient continued to decline further treatment. Physician was notified of the refusal by phone.",
+      "follow_up_note": "Synthetic note: patient remained in the unit for observation for 30 minutes after discontinuation; vital signs reassessed and stable prior to discharge home with standard post-treatment instructions and follow-up scheduled for the next session."
+    },
+    {
+      "treatment_date": "2026-02-18",
+      "scheduled_minutes": 240,
+      "completed_minutes": 160,
+      "status": "completed_early",
+      "treatment_note": "Synthetic note: at approximately 160 minutes into treatment, patient stated they wanted to stop treatment, citing anxiety. Patient continued to decline further treatment despite staff presence.",
+      "follow_up_note": "Synthetic note: patient left the unit shortly after discontinuation."
+    }
+  ]
+}

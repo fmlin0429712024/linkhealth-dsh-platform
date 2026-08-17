@@ -1,0 +1,79 @@
+{
+  "dataset_notice": "Fully fictional mock data created solely for this public POC. Not derived from any patient, provider, or client system.",
+  "phase_notice": "Phase 1.5 (multi-domain) fixture. Separate from data/synthetic-ichd-patient-goldset.json on purpose — that file is shared/referenced by Phase 1 skills and Phase 2 (claude-sdk-audit) and must not change shape. This file adds patient.nursing_notes and two new clinical_treatments entries to exercise SYN-ICHD-05 (patient-domain, cross-domain). The first five clinical_treatments entries are verbatim copies of the original gold set so SYN-ICHD-01/02/04/09 still trigger identically here.",
+  "record_id": "SYN-ICHD-0002",
+  "patient": {
+    "synthetic_patient_id": "PT-SYN-1042",
+    "age_band": "60-69",
+    "care_modality": "in-center hemodialysis",
+    "primary_condition_label": "synthetic kidney-care scenario",
+    "nursing_notes": [
+      {
+        "note_date": "2026-03-02",
+        "note": "Synthetic nursing note: physician adjusted the patient's antihypertensive medication (dose reduced) effective today, to reduce intradialytic hypotension risk. Care team to confirm tolerance of the new dose at the next treatment."
+      },
+      {
+        "note_date": "2026-03-16",
+        "note": "Synthetic nursing note: patient's oral iron supplement was discontinued effective today due to reported GI intolerance. Care team to monitor iron-related labs and confirm resolution of symptoms."
+      }
+    ]
+  },
+  "clinical_treatments": [
+    {
+      "treatment_date": "2026-01-14",
+      "scheduled_minutes": 240,
+      "completed_minutes": 205,
+      "status": "completed_early",
+      "treatment_note": "Synthetic note: treatment ended early; fictional symptoms were addressed and the patient was stable at discharge.",
+      "follow_up_note": "Synthetic note: follow-up plan documented for the next treatment."
+    },
+    {
+      "treatment_date": "2026-01-28",
+      "scheduled_minutes": 240,
+      "completed_minutes": 236,
+      "status": "completed",
+      "treatment_note": "Synthetic note: at approximately 90 minutes into treatment, patient reported dizziness and blood pressure was recorded as low. Ultrafiltration rate was reduced and the patient was repositioned. A saline bolus was given per standing order. Blood pressure was reassessed 15 minutes later and had returned to baseline; symptoms resolved. Treatment continued and completed close to schedule.",
+      "follow_up_note": "Synthetic note: physician was notified of the event and the reassessment findings. Patient stable at discharge; standard follow-up plan documented for the next treatment."
+    },
+    {
+      "treatment_date": "2026-02-04",
+      "scheduled_minutes": 240,
+      "completed_minutes": 238,
+      "status": "completed",
+      "treatment_note": "Synthetic note: at approximately 100 minutes into treatment, patient reported dizziness and blood pressure was recorded as low. Ultrafiltration rate was reduced.",
+      "follow_up_note": "Synthetic note: patient monitored for the remainder of treatment."
+    },
+    {
+      "treatment_date": "2026-02-11",
+      "scheduled_minutes": 240,
+      "completed_minutes": 165,
+      "status": "completed_early",
+      "treatment_note": "Synthetic note: at approximately 165 minutes into treatment, patient stated they wanted to stop treatment and requested removal from dialysis, citing discomfort. Nurse discussed the risks of discontinuing treatment early with the patient, including potential complications, and offered to adjust comfort measures. Patient continued to decline further treatment. Physician was notified of the refusal by phone.",
+      "follow_up_note": "Synthetic note: patient remained in the unit for observation for 30 minutes after discontinuation; vital signs reassessed and stable prior to discharge home with standard post-treatment instructions and follow-up scheduled for the next session."
+    },
+    {
+      "treatment_date": "2026-02-18",
+      "scheduled_minutes": 240,
+      "completed_minutes": 160,
+      "status": "completed_early",
+      "treatment_note": "Synthetic note: at approximately 160 minutes into treatment, patient stated they wanted to stop treatment, citing anxiety. Patient continued to decline further treatment despite staff presence.",
+      "follow_up_note": "Synthetic note: patient left the unit shortly after discontinuation."
+    },
+    {
+      "treatment_date": "2026-03-04",
+      "scheduled_minutes": 240,
+      "completed_minutes": 237,
+      "status": "completed",
+      "treatment_note": "Synthetic note: at start of treatment, staff noted the patient's antihypertensive dose was reduced per the 2026-03-02 medication change. Blood pressure was monitored closely throughout the session; no hypotensive symptoms occurred and the patient tolerated the reduced dose well.",
+      "follow_up_note": "Synthetic note: physician was informed that the patient tolerated the reduced antihypertensive dose well during treatment; plan is to continue at the current dose and reassess next session."
+    },
+    {
+      "treatment_date": "2026-03-18",
+      "scheduled_minutes": 240,
+      "completed_minutes": 235,
+      "status": "completed",
+      "treatment_note": "Synthetic note: treatment completed without incident; standard intradialytic monitoring performed.",
+      "follow_up_note": "Synthetic note: patient stable at discharge; standard follow-up plan documented for the next treatment."
+    }
+  ]
+}

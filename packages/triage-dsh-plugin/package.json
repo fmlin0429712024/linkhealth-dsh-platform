@@ -1,0 +1,47 @@
+{
+  "name": "linkhealth-intake-triage-dsh",
+  "version": "1.0.0",
+  "description": "DeepSeek Harness (DSH) plugin packaging of the LinkHealth intake-triage system: a hub skill that classifies/scores/routes inbound healthcare-sector business enquiries, three spoke role prompts that draft scoping notes, and a deterministic guardrail backstop that blocks any triage-log write violating phi_involved => requires_human_review.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./validate": "./lib/validate.js"
+  },
+  "files": [
+    "lib",
+    "skills",
+    "agents",
+    "scripts",
+    "examples",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "cordis",
+    "plugin",
+    "bundle",
+    "intake",
+    "triage",
+    "routing",
+    "healthcare",
+    "hub-and-spoke"
+  ],
+  "author": {
+    "name": "fmlin",
+    "email": "fmlin0429712024@gmail.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fmlin0429712024/linkhealth-triage",
+  "repository": "https://github.com/fmlin0429712024/linkhealth-triage",
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "linkhealth-gui-plugin",
+  "version": "0.1.0",
+  "description": "LinkHealth Agents front door for the DeepSeek Harness web surface: brand theme, branded welcome, a config-driven capability launcher (Triage, CDI Audit), and a capability showcase. Presentation only — adds no business logic and imports no business plugin.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web"
+    }
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "react": "*",
+    "@deepseek-ai/dsh-client-runtime": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-primitives": "^0.1.0-rc.6"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "client",
+    "brand",
+    "launcher",
+    "linkhealth",
+    "front-door"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "fmlin",
+    "email": "fmlin0429712024@gmail.com"
+  },
+  "repository": "https://github.com/fmlin0429712024/linkhealth-triage"
+}

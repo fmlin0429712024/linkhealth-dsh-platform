@@ -1,0 +1,33 @@
+# The linkhealth-intake-triage-dsh bundle patch.
+#
+# A DSH bundle is an npm package whose package.json declares
+# `"dsh": { "bundle": { "patch": "./cordis.patch.yml" } }`. This patch layer
+# is applied over the profile tree after the base layer (and any bundles that
+# precede this one in `dsh.profile.bundles`), and before the profile's own
+# `cordis.patch.yml`.
+#
+# This plugin adds exactly ONE entry: the `linkhealth-intake-triage-dsh`
+# package itself, whose `lib/index.js` registers everything the system needs
+# against the harness services it finds at boot:
+#
+#   - the `intake-triage` hub skill and the three spoke role prompts
+#     (`automation-lead`, `data-lead`, `deployment-lead`) on `ctx.skills`
+#     (global layer, so every agent/session sees them);
+#   - the `validate-triage-log` tool on `ctx.tools`;
+#   - a `tools/post-execute` waterfall listener that deterministically blocks
+#     any `write`/`edit` call whose target is a `data/triage_log.jsonl` and
+#     whose appended record violates the guardrail (the DSH analogue of the
+#     Claude Code PostToolUse hook);
+#   - a system-prompt section reminding the model of the guardrail contract.
+#
+# `logPath` is the triage log path used as the default for the
+# `validate-triage-log` tool; it resolves against the workspace root (the
+# directory `dsh` was invoked from). The post-execute backstop does not use
+# it — it validates whichever `data/triage_log.jsonl` the write/edit call
+# actually targeted, so it works regardless of workspace location.
+
+- insert:
+    - id: linkhealth-intake-triage
+      name: 'linkhealth-intake-triage-dsh'
+      config:
+        logPath: 'data/triage_log.jsonl'

@@ -1,0 +1,26 @@
+# The linkhealth-gui-plugin bundle patch: ONE entry for the LinkHealth Agents
+# front door.
+#
+# The entry is a client-side plugin: the package declares
+# `dsh.client.platform: "web"`, so the web surface loads `exports["./client"]`
+# as a browser module and registers it on the client root context. The host
+# half (`lib/index.js`) is a no-op so the loader import succeeds on both
+# planes.
+#
+# Everything this plugin renders is driven by this config: the branded
+# welcome copy and the capability launcher list. Adding a third capability is
+# a config edit here — no code change.
+
+- insert:
+    - id: linkhealth-gui
+      name: 'linkhealth-gui-plugin'
+      config:
+        headline: 'LinkHealth Agents'
+        placeholder: 'Triage an enquiry, audit documentation — or describe what you need'
+        capabilities:
+          - id: triage
+            label: Triage
+            description: 'Classify, score, and route inbound business enquiries.'
+          - id: cdi
+            label: CDI Audit
+            description: 'Governed clinical-documentation audit against SOP rules.'

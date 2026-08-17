@@ -1,0 +1,5 @@
+# dsh-cdi-plugin bundle patch: registers the CDI auditing plugin row.
+# Applied after the profile's base bundles, before the user's cordis.patch.yml.
+- insert:
+    - id: cdi-plugin
+      name: 'dsh-cdi-plugin'

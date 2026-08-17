@@ -1,0 +1,35 @@
+{
+  "name": "dsh-cdi-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Synthetic CDI (clinical documentation integrity) auditing plugin for DeepSeek Harness — Step 1: pure host plugin, AS-IS GUI. Bundles the deterministic SOP-rule evaluation tools, the SQLite SOP stores, the synthetic gold sets, the audit rules, and a packaged copy of the CDI skills.",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    }
+  },
+  "files": [
+    "lib",
+    "tools",
+    "data",
+    "rules",
+    "skills",
+    "cordis.patch.yml"
+  ],
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.18.1"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-tools": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-skill": "^0.1.0-rc.6"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

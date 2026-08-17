@@ -1,0 +1,10 @@
+node_modules/
+.DS_Store
+__pycache__/
+*.pyc
+.env
+.env.*
+
+# Local-only agent tooling — never a public deliverable of this repo
+CLAUDE.md
+.claude/

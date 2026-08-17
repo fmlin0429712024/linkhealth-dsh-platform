@@ -1,0 +1,17 @@
+{
+  "name": "linkhealth-dsh-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LinkHealth's DeepSeek Harness (DSH) plugins — Cordis-based host and client packages for the intake-triage and CDI audit product lines.",
+  "license": "MIT",
+  "homepage": "https://github.com/fmlin0429712024/linkhealth-dsh-platform",
+  "repository": "https://github.com/fmlin0429712024/linkhealth-dsh-platform",
+  "scripts": {
+    "test": "pnpm -r --if-present run test",
+    "lint": "pnpm -r --if-present run lint"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20"
+  }
+}
