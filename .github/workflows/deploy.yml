@@ -45,16 +45,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Node 22 must match the VM: the npm install below builds native deps
+      # (sharp) against this runner's node/platform.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Build the deploy unit (self-contained profile + plugins)
         run: |
           set -euo pipefail
           SHA="${GITHUB_SHA::7}"
-          mkdir -p dist/profile/plugins dist/profile/node_modules
+          mkdir -p dist/profile/plugins
           cp deploy/profile-linkhealth/package.json deploy/profile-linkhealth/cordis.patch.yml dist/profile/
           cp -r plugins/dsh-triage-plugin dist/profile/plugins/
           cp -r plugins/dsh-cdi-plugin dist/profile/plugins/
           cp -r plugins/dsh-vision-plugin dist/profile/plugins/
           cp -r plugins/dsh-linkhealth-gui-plugin dist/profile/plugins/
+          # Install dsh-vision-router + its deps (sharp, potrace, puppeteer-core,
+          # undici) into the profile node_modules. Not saved to package.json —
+          # the profile's bundles stay the stock dsh ones. Order matters: npm
+          # install first, then the GUI symlink, so npm never prunes it.
+          (cd dist/profile && npm install dsh-vision-router@1.2.2 --no-save --no-package-lock --no-audit --no-fund)
           # relative symlink — keeps the release directory self-contained
           ln -s ../plugins/dsh-linkhealth-gui-plugin dist/profile/node_modules/dsh-linkhealth-gui-plugin
           # synthetic demo images for the assess_exercise_form tool on the VM

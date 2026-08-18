@@ -11,6 +11,18 @@
 //      the held position matches the expected exercise phase;
 //   2. a system-prompt section describing the tool and its contract.
 //
+// The photo can come from either source:
+//   - `image_path` — a file on disk (relative to the session workspace or
+//     absolute), read by the plugin;
+//   - no `image_path` — the most recent image the user attached to the
+//     conversation, resolved from the session's `user/message` events and read
+//     through the `attachments` service. NOTE: this mode only works on a model
+//     route that accepts image attachments — the harness's server-side
+//     admission gate refuses attached images when the routed model does not
+//     declare `image` input (DeepSeek routes are text-only), so the attachment
+//     path is dormant until such a route is configured. The tool still
+//     registers and the path mode always works.
+//
 // Design constraints honored here (same as every other plugin in this repo):
 //   - No imports from `@deepseek-ai/*` packages: every service is read via
 //     `ctx.get(...)` and the tool is registered as a plain descriptor, so the
@@ -34,7 +46,7 @@ export const name = 'linkhealth-vision'
 /** Hard service dependencies — see the triage plugin for why this matters:
  * without them, `ctx.get(...)` inside `apply()` can race plugin activation
  * and return undefined, silently skipping registration. */
-export const inject = ['tools', 'systemPrompt']
+export const inject = ['tools', 'systemPrompt', 'attachments']
 
 /** Entry config defaults (overridable via the patch row's `config`). */
 export const config = {
@@ -55,26 +67,72 @@ export const config = {
 /** How long a backend request may take before it is aborted. */
 const FETCH_TIMEOUT_MS = 30_000
 
+/** Image extension → media type (path mode; attachment refs carry their own). */
+const IMAGE_MEDIA_TYPES = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.gif': 'image/gif',
+}
+
 /** Resolve a tool-supplied image path against the session workspace. */
 function resolveImagePath(exec, imagePath) {
   const base = exec?.agent?.session?.header?.cwd || process.cwd()
   return path.resolve(base, String(imagePath))
 }
 
-/**
- * POST one image to `<baseUrl>/v1/pose` and return the parsed JSON body.
- * Multipart field name `file` matches infra/openvino-vision/serve.py.
- */
-async function callPoseBackend(baseUrl, imagePath) {
+/** Read a disk image; derive its declared media type from the extension. */
+async function readImageFile(imagePath) {
   let bytes
   try {
     bytes = await readFile(imagePath)
   } catch (error) {
     throw new Error(`could not read image file ${imagePath}: ${String(error?.message ?? error)}`)
   }
+  const ext = path.extname(imagePath).toLowerCase()
+  return {
+    bytes,
+    mediaType: IMAGE_MEDIA_TYPES[ext] ?? 'image/jpeg',
+    filename: path.basename(imagePath),
+  }
+}
+
+/**
+ * Find the most recent image the user attached to the calling session.
+ * Scans `user/message` events (newest first) for `image` content blocks and
+ * returns the newest attachment ref (`{ attachmentId, mediaType, bytes,
+ * width, height, name? }`), or null when none exists.
+ */
+function latestSessionImageRef(exec) {
+  const events = exec?.agent?.session?.events
+  if (!Array.isArray(events)) return null
+  for (let i = events.length - 1; i >= 0; i -= 1) {
+    const event = events[i]
+    if (event?.type !== 'user/message') continue
+    const content = event.data?.content ?? event.data?.message?.content
+    if (!Array.isArray(content)) continue
+    for (let j = content.length - 1; j >= 0; j -= 1) {
+      const block = content[j]
+      if (block?.type === 'image' && block.attachment?.attachmentId) return block.attachment
+    }
+  }
+  return null
+}
+
+function extFromMediaType(mediaType) {
+  const map = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' }
+  return map[mediaType] ?? 'jpg'
+}
+
+/**
+ * POST one image to `<baseUrl>/v1/pose` and return the parsed JSON body.
+ * Multipart field name `file` matches infra/openvino-vision/serve.py.
+ */
+async function postImageToPoseBackend(baseUrl, bytes, { mediaType, filename }) {
   const url = `${baseUrl.replace(/\/+$/, '')}/v1/pose`
   const form = new FormData()
-  form.append('file', new Blob([bytes], { type: 'image/jpeg' }), path.basename(imagePath))
+  form.append('file', new Blob([bytes], { type: mediaType }), filename)
 
   let response
   try {
@@ -129,6 +187,7 @@ export function apply(ctx, entryConfig) {
 
   const tools = ctx.get('tools')
   const systemPrompt = ctx.get('systemPrompt')
+  const attachments = ctx.get('attachments')
 
   // ── 1. The assess_exercise_form tool ──────────────────────────────────────
   // Registered unconditionally (even without a baseUrl): the model sees the
@@ -145,13 +204,15 @@ export function apply(ctx, entryConfig) {
           'held position matches the expected phase (extended >= 150°, curled <= 60°). The tool\'s geometry verdict is ' +
           'final — never judge the angle yourself, only narrate the result. A single frame assesses a HELD position only, ' +
           'not range of motion across a rep; the subject must be standing or seated (the pose model is unreliable on a ' +
-          'lying subject). Low-confidence or missing arm keypoints yield insufficient_evidence rather than a guess.',
+          'lying subject). Low-confidence or missing arm keypoints yield insufficient_evidence rather than a guess. ' +
+          'The photo is taken from `image_path` when given; otherwise the most recently attached image in the ' +
+          'conversation is used (only available on deployments whose model route accepts image attachments).',
         parameters: {
           type: 'object',
           properties: {
             image_path: {
               type: 'string',
-              description: 'Path to the photo (JPG/PNG), relative to the session workspace or absolute.',
+              description: 'Optional path to the photo (JPG/PNG), relative to the session workspace or absolute. Omit it to use the most recently attached image in the conversation.',
             },
             expected_phase: {
               type: 'string',
@@ -164,7 +225,6 @@ export function apply(ctx, entryConfig) {
               description: "Which arm to assess. Default 'auto': the confidently detected arm, preferring the higher average confidence when both qualify.",
             },
           },
-          required: ['image_path'],
         },
         output: {
           schema: {
@@ -192,8 +252,39 @@ export function apply(ctx, entryConfig) {
               '(e.g. http://10.128.0.11:8080 on the LinkHealth VPC)',
             )
           }
-          const imagePath = resolveImagePath(exec, args?.image_path)
-          const body = await callPoseBackend(baseUrl, imagePath)
+
+          let bytes
+          let mediaType
+          let filename
+          const imagePath = args?.image_path
+
+          if (imagePath && String(imagePath).trim().length > 0) {
+            const resolved = resolveImagePath(exec, imagePath)
+            const info = await readImageFile(resolved)
+            bytes = info.bytes
+            mediaType = info.mediaType
+            filename = info.filename
+          } else {
+            if (!attachments) {
+              throw new Error(
+                'assess_exercise_form: no image_path given and the attachments service is unavailable — ' +
+                'pass image_path or deploy with attachments enabled',
+              )
+            }
+            const ref = latestSessionImageRef(exec)
+            if (!ref) {
+              throw new Error(
+                'assess_exercise_form: no image_path given and no image attachment found in the session — ' +
+                'attach an image to the conversation or pass image_path',
+              )
+            }
+            const { data } = await attachments.readImage(ref, exec?.signal)
+            bytes = new Uint8Array(data)
+            mediaType = ref.mediaType ?? 'image/jpeg'
+            filename = ref.name ?? `attachment.${extFromMediaType(mediaType)}`
+          }
+
+          const body = await postImageToPoseBackend(baseUrl, bytes, { mediaType, filename })
           return assessExerciseForm(body.keypoints, {
             side: args?.side ?? 'auto',
             expectedPhase: args?.expected_phase ?? null,
@@ -216,9 +307,11 @@ export function apply(ctx, entryConfig) {
           'LinkHealth Vision provides the `assess_exercise_form` tool for PT/rehab exercise-form checks: it sends one photo ' +
           '(subject standing or seated — never lying down) to the configured vision backend, computes the elbow angle ' +
           'deterministically from the pose keypoints, and reports whether the held position matches the expected phase. ' +
-          "The tool's geometry verdict is final — narrate it, never re-judge it. The tool needs the plugin's `baseUrl` " +
-          'config set; without it, calling the tool raises a configuration error. Everything here is synthetic/demo ' +
-          'data only — never real patient data, and never a clinical decision.',
+          "The tool's geometry verdict is final — narrate it, never re-judge it. Give the photo via `image_path` (a file " +
+          'in the workspace) or, on deployments whose model route accepts image attachments, attach the photo to the ' +
+          'conversation and call the tool without `image_path`. The tool needs the plugin\'s `baseUrl` config set; without ' +
+          'it, calling the tool raises a configuration error. Everything here is synthetic/demo data only — never real ' +
+          'patient data, and never a clinical decision.',
       }),
     )
   } else {

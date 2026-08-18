@@ -33,6 +33,21 @@
       config:
         baseUrl: 'http://10.128.0.11:8080'
 
+# ── dsh-vision-router (npm-installed at build time into profile/node_modules;
+# see .github/workflows/deploy.yml "Build the deploy unit"): eyes for text-only
+# models — built-in free vision chain (no key) + pixel-level vision tools
+# (Q&A, grounding, crop, pixel diff, colors, OCR, SVG trace, cutout, screenshots)
+# + a deepseek-vision twin route. Config editable later in Settings → 插件配置.
+- insert:
+    - id: vision-router
+      name: 'dsh-vision-router'
+
+# 放宽附件图片限制（dsh-vision-router 建议值：20MB / 1 亿像素），大图可过审。
+- id: attachment-local
+  config:
+    maxImageBytes: 20971520
+    maxImagePixels: 100000000
+
 # ── LinkHealth Agents front door (client: brand theme + capability launcher) ─
 # Loaded by name; the release build symlinks it into profile/node_modules.
 - insert:

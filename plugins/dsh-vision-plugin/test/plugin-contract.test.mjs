@@ -66,7 +66,9 @@ test('apply() registers exactly one tool and one prompt section; dispose tears b
 
   assert.equal(registered.tools.length, 1)
   assert.equal(registered.tools[0].name, 'assess_exercise_form')
-  assert.equal(registered.tools[0].parameters.required[0], 'image_path')
+  // Both image sources are optional: image_path OR a session attachment.
+  assert.equal(registered.tools[0].parameters.required, undefined)
+  assert.equal(typeof registered.tools[0].parameters.properties.image_path, 'object')
   assert.equal(registered.tools[0].output.schema.type, 'object')
   assert.equal(typeof registered.tools[0].execute, 'function')
 
