@@ -1,24 +1,18 @@
-// Contract test for dsh-vision-insights-plugin's host entry.
+// Contract test for dsh-vision-insights-plugin's host entry (scaffold).
 // Zero dependencies: node:test + node:assert. Run: node --test
 //
 // Pins the Cordis entry-module shape (name/inject/config/apply) and the
-// apply() wiring contract: one tool registration + one prompt section, both
-// returning disposers. Business logic lives in pose.test.mjs and
-// assess-exercise-form.test.mjs.
+// apply() wiring contract. The plugin currently registers no tools (the
+// query_vision_events tool lands with the Phase 2 integration — see
+// docs/PRD-vision-insights.md).
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { name, inject, config, apply } from '../lib/index.js'
 
-function makeCtx({ tools = true, systemPrompt = true } = {}) {
-  const registered = { tools: [], sections: [], disposed: [] }
+function makeCtx({ systemPrompt = true } = {}) {
+  const registered = { sections: [], disposed: [] }
   const services = {
-    tools: {
-      register: (definition) => {
-        registered.tools.push(definition)
-        return () => registered.disposed.push(`tool:${definition.name}`)
-      },
-    },
     systemPrompt: {
       section: (section) => {
         registered.sections.push(section)
@@ -29,7 +23,6 @@ function makeCtx({ tools = true, systemPrompt = true } = {}) {
   return {
     ctx: {
       get: (svc) => {
-        if (tools && svc === 'tools') return services.tools
         if (systemPrompt && svc === 'systemPrompt') return services.systemPrompt
         return undefined
       },
@@ -48,40 +41,24 @@ test('exports the Cordis entry contract', () => {
   assert.equal(typeof apply, 'function')
 })
 
-test('config defaults: baseUrl unset, confidenceThreshold 0.1', () => {
+test('config: baseUrl unset by default (data source integration is Phase 2)', () => {
   assert.equal(config.baseUrl, '')
-  assert.equal(config.confidenceThreshold, 0.1)
 })
 
 test('apply() with no services does not throw and returns a disposer', () => {
-  const { ctx } = makeCtx({ tools: false, systemPrompt: false })
+  const { ctx } = makeCtx({ systemPrompt: false })
   const dispose = apply(ctx, {})
   assert.equal(typeof dispose, 'function')
   assert.doesNotThrow(() => dispose())
 })
 
-test('apply() registers exactly one tool and one prompt section; dispose tears both down', () => {
+test('apply() registers exactly one prompt section; dispose tears it down', () => {
   const { ctx, registered } = makeCtx()
   const dispose = apply(ctx, { baseUrl: 'http://backend.test:8080' })
-
-  assert.equal(registered.tools.length, 1)
-  assert.equal(registered.tools[0].name, 'assess_exercise_form')
-  // Both image sources are optional: image_path OR a session attachment.
-  assert.equal(registered.tools[0].parameters.required, undefined)
-  assert.equal(typeof registered.tools[0].parameters.properties.image_path, 'object')
-  assert.equal(registered.tools[0].output.schema.type, 'object')
-  assert.equal(typeof registered.tools[0].execute, 'function')
 
   assert.equal(registered.sections.length, 1)
   assert.equal(registered.sections[0].name, 'linkhealth-vision')
 
   dispose()
-  assert.equal(registered.disposed.length, 2)
-})
-
-test('the tool registers even without a baseUrl (configuration error surfaces at call time)', () => {
-  const { ctx, registered } = makeCtx()
-  const dispose = apply(ctx, {})
-  assert.equal(registered.tools.length, 1)
-  dispose()
+  assert.equal(registered.disposed.length, 1)
 })
