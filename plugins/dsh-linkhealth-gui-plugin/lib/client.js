@@ -36,7 +36,7 @@ window.__ModuleLoader__.load({
     // these.
     const BUILTIN_CONFIG = {
       headline: 'LinkHealth Agents',
-      placeholder: 'Triage an enquiry, audit documentation — or describe what you need',
+      placeholder: 'Triage an enquiry, audit documentation, assess an exercise photo — or describe what you need',
       capabilities: [
         {
           id: 'triage',
@@ -47,6 +47,11 @@ window.__ModuleLoader__.load({
           id: 'cdi',
           label: 'CDI Audit',
           description: 'Governed clinical-documentation audit against SOP rules.',
+        },
+        {
+          id: 'vision',
+          label: 'Vision',
+          description: 'PT/rehab exercise-form checks from a photo (OpenVINO pose backend).',
         },
       ],
     }

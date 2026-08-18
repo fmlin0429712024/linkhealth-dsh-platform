@@ -3,14 +3,14 @@
 **Status: active.** Brand theme override, the capability launcher
 (`sidebar.footer.action`), and the capability showcase (`settings.section`)
 are implemented and verified — the pure config logic is covered by 22/22
-unit tests. The built-in config ships **two capability cards: Triage and
-CDI Audit** (both host plugins live in the same repo, presented without
-importing either — zero business coupling).
+unit tests. The built-in config ships **three capability cards: Triage,
+CDI Audit, and Vision** (the host plugins live in the same repo, presented
+without importing either — zero business coupling).
 
 The **LinkHealth Agents front door** — a client-side DeepSeek Harness (DSH)
 plugin that brands the web surface and exposes the product line's capabilities
-(Triage, CDI Audit) as first-class entries. **Presentation only**: it adds no
-business logic and imports no business plugin.
+(Triage, CDI Audit, Vision) as first-class entries. **Presentation only**: it
+adds no business logic and imports no business plugin.
 
 Spec and tasks (`docs/PRD-gui-plugin.md`, `docs/TASKS-gui-plugin.md`) live in the
 [`linkhealth-triage`](https://github.com/fmlin0429712024/linkhealth-triage) source
@@ -54,6 +54,9 @@ patch rows restores the stock UI).
              - id: cdi
                label: CDI Audit
                description: 'Governed clinical-documentation audit against SOP rules.'
+             - id: vision
+               label: Vision
+               description: 'PT/rehab exercise-form checks from a photo (OpenVINO pose backend).'
    ```
 
 3. **Restart the web server once** (Ctrl+C → `dsh web`), then refresh the
