@@ -14,9 +14,9 @@
 // using the checked-in synthetic sample frames.
 //
 // Exit code 0 only when both samples are assessed and match their expected
-// phases. See plugins/dsh-vision-plugin/README.md.
+// phases. See plugins/dsh-vision-insights-plugin/README.md.
 
-import { apply } from '../plugins/dsh-vision-plugin/lib/index.js'
+import { apply } from '../plugins/dsh-vision-insights-plugin/lib/index.js'
 
 const REPO_ROOT = new URL('..', import.meta.url).pathname
 const baseUrl = process.argv[2] ?? process.env.VISION_BASE_URL ?? 'http://127.0.0.1:8080'

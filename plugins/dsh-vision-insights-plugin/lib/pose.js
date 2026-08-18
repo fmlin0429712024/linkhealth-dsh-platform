@@ -1,4 +1,4 @@
-// dsh-vision-plugin — pure pose-geometry helpers and the deterministic
+// dsh-vision-insights-plugin — pure pose-geometry helpers and the deterministic
 // exercise-form rule.
 //
 // No imports, no I/O, no DSH services: everything here is a pure function of

@@ -7,7 +7,7 @@ and a known limitation to be aware of before trusting its output on a
 multi-person scene.
 
 This directory tracks the OpenVINO inference showcase that
-`plugins/dsh-vision-plugin` will eventually call. `plugins/dsh-vision-plugin`
+`plugins/dsh-vision-insights-plugin` will eventually call. `plugins/dsh-vision-insights-plugin`
 itself is still a placeholder (see that package's README) — it will only
 ever hold a `baseUrl`/`apiKey`-style config pointing at this service's
 endpoint, once the plugin implementation starts.
@@ -24,7 +24,7 @@ to satisfy. It's a sibling to `deploy/` (which provisions the VM for *this
 repo's DSH profile*, a separate concern) rather than something bundled into
 any npm package.
 
-`plugins/dsh-vision-plugin` will only ever hold a `baseUrl`/`apiKey`-style
+`plugins/dsh-vision-insights-plugin` will only ever hold a `baseUrl`/`apiKey`-style
 config pointing at whatever this service's endpoint is — it does not import
 or bundle anything from here.
 
@@ -33,7 +33,7 @@ or bundle anything from here.
 - **OpenVINO is a loosely-coupled anchor, not a disposable MVP shortcut.**
   The longer-term direction is extending the platform into IIoT/Edge
   inference; LinkHealth Vision is the first vertical proving that out.
-  "Loosely coupled" means `dsh-vision-plugin` talks to this service over an
+  "Loosely coupled" means `dsh-vision-insights-plugin` talks to this service over an
   OpenAI-compatible HTTP contract and never hard-codes OpenVINO specifics —
   but building this out for real (not skipping it for a hosted API) is the
   point.
@@ -63,7 +63,7 @@ Originally scoped as design-only (built/deployed through DSH, not this
 Claude Code session) — the user explicitly asked this session to provision,
 install, and deploy the Tier-1 showcase directly (2026-08-18), so that part
 happened here instead. The business plugin implementation
-(`plugins/dsh-vision-plugin`) is still out of scope for this session unless
+(`plugins/dsh-vision-insights-plugin`) is still out of scope for this session unless
 asked again.
 
 ## Implementation status (2026-08-18)
@@ -214,7 +214,7 @@ useful if a different (lying-pose-capable) model is evaluated later.
 ## Next steps (not done yet)
 
 - The verified use case is PT/rehab exercise form tracking, not fall
-  detection — decide whether `plugins/dsh-vision-plugin`'s first real tool
+  detection — decide whether `plugins/dsh-vision-insights-plugin`'s first real tool
   should target this (e.g. an `assess_exercise_form`-style tool) instead of
   the fall-risk tools sketched in the original brainstorm.
 - ~~`serve.py`, `openvino-vision.service`, `timeline_test.py`, and `pt_test.py`
@@ -260,7 +260,7 @@ record of what exists, not a pending proposal anymore.
 | Estimated cost | **~$0.097/hr ≈ $71/mo** on-demand for `n2-standard-2` in `us-central1` (a Spot instance would run ~$23/mo instead, ~67% cheaper — an option to reconsider later, not now) — source below |
 | OS image | `debian-12` (matches `linkhealth-vm2`, per `docs/deployment-gcp.md`) |
 | Boot disk | 50 GB `pd-balanced` (OpenVINO + Python deps + model files won't fit comfortably in the default 10 GB) |
-| Network exposure | **No public inference port.** Firewall rule scoped to the VPC's internal range only (`10.128.0.0/20`), tagged `openvino-vision` — so only other VMs in this same network (e.g. wherever `dsh-vision-plugin` ends up running) can reach it, not the open internet. SSH access is via IAP tunneling (`gcloud compute ssh --tunnel-through-iap`) — the existing `allow-ssh-iap` firewall rule already covers every instance in the project, so no new SSH-specific rule was needed (the `linkhealth-vm`-tagged direct-SSH rule doesn't apply here, and wasn't used). |
+| Network exposure | **No public inference port.** Firewall rule scoped to the VPC's internal range only (`10.128.0.0/20`), tagged `openvino-vision` — so only other VMs in this same network (e.g. wherever `dsh-vision-insights-plugin` ends up running) can reach it, not the open internet. SSH access is via IAP tunneling (`gcloud compute ssh --tunnel-through-iap`) — the existing `allow-ssh-iap` firewall rule already covers every instance in the project, so no new SSH-specific rule was needed (the `linkhealth-vm`-tagged direct-SSH rule doesn't apply here, and wasn't used). |
 | Auth | **None yet.** Any host that can reach the VPC internal range can call `/v1/pose` — fine for an MVP with only synthetic/test data, revisit before anything sensitive goes through it. |
 
 **Why this VM will be reachable from `linkhealth-vm2` later:** not because

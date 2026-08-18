@@ -1,0 +1,22 @@
+# The dsh-vision-insights-plugin bundle patch.
+#
+# `lib/index.js` registers vision-insight tools against the OpenVINO vision
+# service(s) reached via the `baseUrl` config entry below (today:
+# `assess_exercise_form`; tomorrow: `query_vision_events` over the insight
+# store — see README "Architecture"). Tools are registered unconditionally,
+# but calling without `baseUrl` set raises a clear configuration error — the
+# endpoint is a deployment decision (only instance today:
+# http://10.128.0.11:8080 on the GCP VPC, see infra/openvino-vision/README.md),
+# so this default layer keeps `config: {}` and the wiring profile supplies the
+# real value.
+#
+# A DSH bundle is an npm package whose package.json declares
+# `"dsh": { "bundle": { "patch": "./cordis.patch.yml" } }`. This patch layer
+# is applied over the profile tree after the base layer (and any bundles that
+# precede this one in `dsh.profile.bundles`), and before the profile's own
+# `cordis.patch.yml`.
+
+- insert:
+    - id: linkhealth-vision
+      name: 'dsh-vision-insights-plugin'
+      config: {}

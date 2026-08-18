@@ -59,7 +59,7 @@ jobs:
           cp deploy/profile-linkhealth/package.json deploy/profile-linkhealth/cordis.patch.yml dist/profile/
           cp -r plugins/dsh-triage-plugin dist/profile/plugins/
           cp -r plugins/dsh-cdi-plugin dist/profile/plugins/
-          cp -r plugins/dsh-vision-plugin dist/profile/plugins/
+          cp -r plugins/dsh-vision-insights-plugin dist/profile/plugins/
           cp -r plugins/dsh-linkhealth-gui-plugin dist/profile/plugins/
           # Install dsh-vision-router + its deps (sharp, potrace, puppeteer-core,
           # undici) into the profile node_modules. Not saved to package.json —

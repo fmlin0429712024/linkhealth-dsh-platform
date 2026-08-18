@@ -1,4 +1,4 @@
-// Contract test for dsh-vision-plugin's host entry.
+// Contract test for dsh-vision-insights-plugin's host entry.
 // Zero dependencies: node:test + node:assert. Run: node --test
 //
 // Pins the Cordis entry-module shape (name/inject/config/apply) and the

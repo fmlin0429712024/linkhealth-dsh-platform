@@ -1,15 +1,23 @@
-// dsh-vision-plugin — host entry.
+// dsh-vision-insights-plugin — host entry.
+//
+// The DSH CONSUMER side of the LinkHealth vision-insights architecture:
+// OpenVINO edge pipelines (infra/openvino-vision, deployed separately) run
+// pose inference + deterministic rules and write structured insight events to
+// an insight store; this plugin reads vision services through a `baseUrl`
+// config entry and exposes them as DSH tools. LLMs never see images — only
+// deterministic, structured results.
 //
 // Loaded by the Cordis loader as one bundle entry (`name: 'dsh-vision-plugin'`
-// in cordis.patch.yml, bundle-instance id `linkhealth-vision`). `apply()`
-// registers the plugin's first real tool, `assess_exercise_form`, against the
+// in cordis.patch.yml — the package was renamed to dsh-vision-insights-plugin
+// on 2026-08-18 to match this architecture; bundle-instance id stays
+// `linkhealth-vision`). `apply()` registers the plugin's tools against the
 // harness services it finds at boot:
 //
 //   1. `assess_exercise_form` on `ctx.tools` — sends one photo to the
 //      configured vision backend (`/v1/pose`), computes the elbow angle
 //      deterministically from the returned keypoints, and reports whether
 //      the held position matches the expected exercise phase;
-//   2. a system-prompt section describing the tool and its contract.
+//   2. a system-prompt section describing the tools and their contract.
 //
 // The photo can come from either source:
 //   - `image_path` — a file on disk (relative to the session workspace or
@@ -29,7 +37,7 @@
 //     package has zero runtime dependencies.
 //   - Deterministic tool decides, LLM only narrates: the geometry rule in
 //     `./pose.js` is final, exactly like `dsh-cdi-plugin`'s `cdi_query_rule`.
-//   - The vision backend is never hardcoded: it is the `baseUrl` config entry
+//   - The vision service is never hardcoded: it is the `baseUrl` config entry
 //     (only instance today: `http://10.128.0.11:8080` on the GCP VPC — see
 //     infra/openvino-vision/README.md).
 //   - All registrations return disposers; `apply()` returns a combined
@@ -248,7 +256,7 @@ export function apply(ctx, entryConfig) {
         async execute(args, exec) {
           if (!baseUrl) {
             throw new Error(
-              'assess_exercise_form: vision backend not configured — set the dsh-vision-plugin `baseUrl` config ' +
+              'assess_exercise_form: vision backend not configured — set the dsh-vision-insights-plugin `baseUrl` config ' +
               '(e.g. http://10.128.0.11:8080 on the LinkHealth VPC)',
             )
           }

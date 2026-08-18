@@ -47,7 +47,7 @@ cat > "$PATCH_FILE" <<EOF
         bundledSkills: true
 - insert:
     - id: linkhealth-vision
-      name: '$REPO_ROOT/plugins/dsh-vision-plugin/lib/index.js'
+      name: '$REPO_ROOT/plugins/dsh-vision-insights-plugin/lib/index.js'
       config:
         baseUrl: 'http://10.128.0.11:8080'
 EOF
