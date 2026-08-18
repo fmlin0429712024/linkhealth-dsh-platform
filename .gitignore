@@ -8,6 +8,7 @@ __pycache__/
 # Local-only agent tooling — never a public deliverable of this repo
 CLAUDE.md
 .claude/
+DSH-HANDOFF-PROMPT.md
 
 # Machine-local DSH test homes (contain credentials copies — never commit)
 .dsh-test-home/

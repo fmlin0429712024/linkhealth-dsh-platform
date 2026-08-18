@@ -22,6 +22,17 @@
       config:
         bundledSkills: true
 
+# ── LinkHealth Vision (host: assess_exercise_form, PT/rehab form check) ─────
+# baseUrl points at the OpenVINO pose-estimation showcase VM
+# (linkhealth-openvino-vision, 10.128.0.11:8080) — reachable from this
+# profile's VM because both sit on the same VPC (default network,
+# us-central1). See infra/openvino-vision/README.md.
+- insert:
+    - id: linkhealth-vision
+      name: './plugins/dsh-vision-plugin/lib/index.js'
+      config:
+        baseUrl: 'http://10.128.0.11:8080'
+
 # ── LinkHealth Agents front door (client: brand theme + capability launcher) ─
 # Loaded by name; the release build symlinks it into profile/node_modules.
 - insert:

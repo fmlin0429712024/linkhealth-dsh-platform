@@ -17,7 +17,7 @@ explore workspaces ([`linkhealth-triage`](https://github.com/fmlin0429712024/lin
 ```
 GitHub push main (plugins/** | deploy/** | workflow)
   → .github/workflows/deploy.yml (GitHub Actions)
-      → build dist/profile/  (deploy template + 3 plugins + relative symlink)
+      → build dist/profile/  (deploy template + 4 plugins + relative symlink)
       → tar → scp → VM:/opt/linkhealth/incoming/
       → ssh → deploy.sh: unpack → wire CDI → switch `current` → restart → health check
 ```
@@ -129,7 +129,11 @@ git push origin main                    # auto-deploys when plugins/deploy/workf
 
 Verify: `systemctl status linkhealth` → active; `curl localhost:3080` on the
 VM → the LinkHealth branded UI; run one triage case and one CDI rule query —
-the guardrail backstop and the deterministic rules run on the VM too.
+the guardrail backstop and the deterministic rules run on the VM too. The
+vision plugin (`assess_exercise_form`) calls the OpenVINO showcase VM
+(`10.128.0.11:8080`, same VPC) — demo it on
+`/opt/linkhealth/current/testdata/pt-exercise-verified/sample-pt-*.jpg`
+(shipped with the release).
 
 Rollback:
 

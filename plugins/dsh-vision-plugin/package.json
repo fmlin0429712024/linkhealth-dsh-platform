@@ -2,7 +2,7 @@
   "name": "dsh-vision-plugin",
   "version": "0.1.0",
   "private": true,
-  "description": "Placeholder scaffold for LinkHealth Vision: a DSH plugin that will add care-observation business logic (nursing System Prompt + assess_fall_risk/check_dressing-style tools) on top of an externally hosted vision-capable model. Not started yet — see README \"Status\".",
+  "description": "LinkHealth Vision for DeepSeek Harness: assess_exercise_form tool that checks PT/rehab exercise form (bicep-curl elbow angle) by calling a vision-backend pose-estimation service through a baseUrl config entry and applying a deterministic geometric rule. Never bundles the inference model itself.",
   "type": "module",
   "main": "lib/index.js",
   "scripts": {
@@ -28,9 +28,10 @@
     "plugin",
     "bundle",
     "vision",
-    "care-observation",
-    "linkhealth",
-    "placeholder"
+    "pose-estimation",
+    "exercise-form",
+    "physical-therapy",
+    "linkhealth"
   ],
   "author": {
     "name": "fmlin",

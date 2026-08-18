@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # e2e-smoke.sh — headless end-to-end smoke of the deployed plugin set.
 #
-# Boots a real DSH headless profile with the triage + CDI plugins loaded from
-# THIS checkout, runs three fixed tasks against the real LLM, and asserts each
-# output carries its expected marker. Used as the pre-deploy gate in
-# .github/workflows/deploy.yml: if any task fails, the release is not deployed.
+# Boots a real DSH headless profile with the triage + CDI + vision plugins
+# loaded from THIS checkout, runs three fixed tasks against the real LLM, and
+# asserts each output carries its expected marker. Used as the pre-deploy gate
+# in .github/workflows/deploy.yml: if any task fails, the release is not
+# deployed. The vision plugin rides along as a boot/registration guard only —
+# its tool is never called here because the OpenVINO backend is unreachable
+# from CI (VPC-internal).
 #
 # Requirements:
 #   - dsh CLI on PATH (npm install -g @deepseek-ai/dsh)
@@ -42,6 +45,11 @@ cat > "$PATCH_FILE" <<EOF
       name: '$REPO_ROOT/plugins/dsh-cdi-plugin/lib/index.js'
       config:
         bundledSkills: true
+- insert:
+    - id: linkhealth-vision
+      name: '$REPO_ROOT/plugins/dsh-vision-plugin/lib/index.js'
+      config:
+        baseUrl: 'http://10.128.0.11:8080'
 EOF
 
 # CDI module wiring — mirrors deploy.sh: point the plugin's @deepseek-ai
