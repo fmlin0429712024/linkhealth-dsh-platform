@@ -1,0 +1,45 @@
+{
+  "name": "dsh-vision-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Placeholder scaffold for LinkHealth Vision: a DSH plugin that will add care-observation business logic (nursing System Prompt + assess_fall_risk/check_dressing-style tools) on top of an externally hosted vision-capable model. Not started yet — see README \"Status\".",
+  "type": "module",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "exports": {
+    ".": "./lib/index.js"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "cordis",
+    "plugin",
+    "bundle",
+    "vision",
+    "care-observation",
+    "linkhealth",
+    "placeholder"
+  ],
+  "author": {
+    "name": "fmlin",
+    "email": "fmlin0429712024@gmail.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/fmlin0429712024/linkhealth-dsh-platform",
+  "repository": "https://github.com/fmlin0429712024/linkhealth-dsh-platform",
+  "engines": {
+    "node": ">=20"
+  }
+}

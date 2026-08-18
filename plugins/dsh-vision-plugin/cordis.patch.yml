@@ -1,0 +1,17 @@
+# The dsh-vision-plugin bundle patch.
+#
+# PLACEHOLDER — see the package README "Status" before wiring this into
+# deploy/profile-linkhealth/cordis.patch.yml. `lib/index.js` currently only
+# registers a system-prompt section announcing the plugin is scaffolded but
+# not yet implemented; it registers no tools and calls no external service.
+#
+# A DSH bundle is an npm package whose package.json declares
+# `"dsh": { "bundle": { "patch": "./cordis.patch.yml" } }`. This patch layer
+# is applied over the profile tree after the base layer (and any bundles that
+# precede this one in `dsh.profile.bundles`), and before the profile's own
+# `cordis.patch.yml`.
+
+- insert:
+    - id: linkhealth-vision
+      name: 'dsh-vision-plugin'
+      config: {}
