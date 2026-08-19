@@ -1,0 +1,16 @@
+# Deploy: copy to /etc/systemd/system/vision-insights-api.service on the
+# VM, `sudo systemctl daemon-reload && sudo systemctl restart vision-insights-api`.
+[Unit]
+Description=LinkHealth Vision Insights — events read API (Phase 2 data source)
+After=network.target
+
+[Service]
+Type=simple
+User=fmlin
+WorkingDirectory=/opt/vision-insights-store
+ExecStart=/opt/vision-insights-store/venv/bin/uvicorn events_api:app --host 0.0.0.0 --port 8090
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

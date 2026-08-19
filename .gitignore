@@ -14,10 +14,20 @@ DSH-HANDOFF-PROMPT.md
 .dsh-test-home/
 .dsh-e2e-home/
 
-# Local working clone of the upstream OpenVINO kit (separate app, own repo/
+# Local working clone(s) of upstream OpenVINO kits (separate apps, own repo/
 # history, deployed manually per docs/PRD-vision-insights.md — not a
 # deliverable of this repo, and the LFS video would bloat it)
 infra/openvino-queue-kit/repo/
+infra/openvino-self-checkout/repo/
+
+# Local venv + scratch SQLite db for the Insight Storage layer
+# (infra/vision-insights-store) — deployed venv is provisioned on the VM the
+# same way, not shipped here. Scoped to this directory only — dsh-cdi-plugin
+# intentionally commits its own .db files elsewhere in the repo.
+infra/vision-insights-store/venv/
+infra/vision-insights-store/*.db
+infra/vision-insights-store/*.db-shm
+infra/vision-insights-store/*.db-wal
 
 # Runtime data written by plugins into the workspace root (e.g. triage log)
 /data/

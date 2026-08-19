@@ -1,0 +1,4 @@
+{"ts": "2026-08-19T10:00:00.000000Z", "zone": "zone0", "count": 4, "avg_count": 4.0, "capacity": 3, "over_capacity": true, "source": "iqm-kit-sim"}
+{"ts": "2026-08-19T10:00:15.000000Z", "zone": "zone1", "count": 2, "avg_count": 2.0, "capacity": 3, "over_capacity": false, "source": "iqm-kit-sim"}
+{"ts": "2026-08-19T10:00:30.000000Z", "zone": "zone0", "count": 1, "avg_count": 2.5, "capacity": 3, "over_capacity": false, "source": "iqm-kit-sim"}
+{"ts": "2026-08-19T10:00:45.000000Z", "zone": "zone-1", "count": 0, "avg_count": 0.0, "capacity": 3, "over_capacity": false, "source": "iqm-kit-sim", "event": "stream_end"}
