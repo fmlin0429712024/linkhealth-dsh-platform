@@ -11,36 +11,22 @@ that only ever touch through one thing: the events data source.
 
 ## Architecture — decoupled through the data source
 
-```
-┌────────────────────────────┐  writes   ┌──────────────────────────────┐
-│ OpenVINO Visual App (edge)  │ ───────► │ Insight Storage                │
-│ Intelligent Queue Mgmt kit: │  JSONL   │ SQLite WAL, ingested from the  │
-│ YOLOv8m IR+INT8, zones,     │          │ app's JSONL log + a thin       │
-│ capacity flag, sample video │          │ FastAPI read API (GET          │
-│                              │          │ /v1/events?since=&zone=&limit=)│
-│ OWN app, OWN process, OWN   │          │                                 │
-│ storage. Deployed manually  │          │ OWN storage. Lives on the same │
-│ (infra/openvino-queue-kit). │          │ VM for convenience, but is a   │
-│ NOT part of DSH, NOT in     │          │ separate process/venv from the │
-│ this plugin, NOT in CI/CD.  │          │ OpenVINO app (infra/openvino-  │
-└────────────────────────────┘          │ vision-store / vision-insights-│
-                                         │ api.service). NOT part of      │
-                                         │ this plugin either.            │
-                                         └───────────────▲─────────────────┘
-                                                   reads  │  GET /v1/events
-                                         ┌───────────────┴─────────────────┐
-                                         │ dsh-vision-insights-plugin       │
-                                         │ (this package — the ONLY thing   │
-                                         │ that's actually a DSH plugin)    │
-                                         │                                   │
-                                         │ query_vision_events tool:        │
-                                         │   HTTP GET to `baseUrl` → raw    │
-                                         │   events + deterministic         │
-                                         │   per-zone summary. LLM narrates │
-                                         │   that summary; never recomputes │
-                                         │   or second-guesses it, never    │
-                                         │   sees raw images/video.         │
-                                         └──────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph edge["OpenVINO Visual App (edge)"]
+        A["Intelligent Queue Mgmt kit<br/>YOLOv8m IR+INT8 · zones · capacity flag<br/>own process · own storage · manual deploy<br/>NOT part of DSH / this plugin / CI-CD"]
+    end
+
+    subgraph storage["Insight Storage"]
+        B["SQLite WAL + thin read API<br/>GET /v1/events (since, zone, limit)<br/>own process/venv, same VM for convenience<br/>NOT part of this plugin"]
+    end
+
+    subgraph dsh["dsh-vision-insights-plugin — the only actual DSH plugin here"]
+        C["query_vision_events tool<br/>HTTP GET baseUrl → events + deterministic summary<br/>LLM narrates only — never sees raw images/video"]
+    end
+
+    A -- "writes JSONL" --> B
+    C -- "reads GET /v1/events" --> B
 ```
 
 **The boundary rule**: the only contract between the OpenVINO app and DSH is
