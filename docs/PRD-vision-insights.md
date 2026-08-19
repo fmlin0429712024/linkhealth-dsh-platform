@@ -1,8 +1,25 @@
 # PRD: Vision Insights — OpenVINO Edge Monitoring → Data Source → DSH Query
 
-**Status: Phase 1 done, Phase 2 in progress (2026-08-19).** Supersedes the
-previous framing where the DSH plugin talked directly to an OpenVINO pose
-service (`assess_exercise_form`).
+**Status: Phase 1 and Phase 2 both done and verified end-to-end in production
+(2026-08-19).** Supersedes the previous framing where the DSH plugin talked
+directly to an OpenVINO pose service (`assess_exercise_form`).
+
+**Production verification (2026-08-19, `linkhealth-vm2`, release
+`linkhealth-c1823f7`)**: asked the deployed LinkHealth agent "Did any zone
+exceed capacity in the vision insights data? Give me a per-zone summary." —
+it correctly called `query_vision_events` (not a coding-tool workaround) and
+reported `zone0: 14 events, 1 over-capacity, max 5` / `zone1: 14, 0, max 4` /
+`zone2: 14, 0, max 5`, matching every independent `curl` check against the
+read API throughout Phase 2 development exactly. Full pipeline confirmed:
+OpenVINO app → JSONL → SQLite → read API → `query_vision_events` → LLM
+narration → correct answer.
+
+Note: a local-only dev-profile harness (`linkhealth2`, port 3083) failed to
+register this plugin's tool during development, for reasons not fully
+diagnosed (suspected: that harness's sessions default to a "coding agent"
+persona with filesystem tools instead of business tools, unlike the real
+deployed profile). Doesn't block anything today; worth a proper look if it
+slows down future local iteration on this plugin.
 
 ## 1. Background & decision history
 
