@@ -18,9 +18,10 @@ repo's DSH profile* — a separate concern) rather than something bundled
 into any npm package.
 
 A DSH plugin may eventually talk to something in here over HTTP (see
-`plugins/dsh-vision-insights-plugin`'s `query_vision_events` tool), but it
-never imports or bundles code from `infra/` directly — the only contract
-between the two sides is whatever HTTP API the `infra/` service exposes.
+`plugins/dsh-vision-insights-plugin`'s `query_vision_events` and
+`query_checkout_events` tools), but it never imports or bundles code from
+`infra/` directly — the only contract between the two sides is whatever
+HTTP API the `infra/` service exposes.
 See [docs/PRD-vision-insights.md](../docs/PRD-vision-insights.md) for the
 full architecture and why it's deliberately decoupled this way.
 
@@ -50,8 +51,8 @@ next one:
 | Directory | Status | What it does |
 | --- | --- | --- |
 | [`openvino-queue-kit/`](openvino-queue-kit/README.md) | 🟢 production data source | People-counting/capacity-flagging (YOLOv8m INT8). Feeds the Insight Storage layer that `dsh-vision-insights-plugin`'s `query_vision_events` tool actually queries today. |
-| [`openvino-self-checkout/`](openvino-self-checkout/README.md) | 🟡 verified locally, not deployed | Retail item add/remove tracking (YOLOv8m FP16). Headless driver works end-to-end against the sample video; its events are ingestible (see `vision-insights-store/`) but the kit itself isn't deployed to a VM yet. |
-| [`vision-insights-store/`](vision-insights-store/README.md) | 🟡 version-controlled + locally verified, not redeployed | SQLite + FastAPI read API sitting between both kits above and DSH. Local ingest→serve→query round-trip verified for both event shapes; the VM is still running the older, not-yet-version-controlled copy. |
+| [`openvino-self-checkout/`](openvino-self-checkout/README.md) | 🟢 production data source | Retail item add/remove tracking (YOLOv8m FP16, exact production pins). Deployed and run on `linkhealth-openvino-vision`; feeds Insight Storage, queried by `dsh-vision-insights-plugin`'s `query_checkout_events` tool — verified end-to-end through the deployed DSH agent 2026-08-19. |
+| [`vision-insights-store/`](vision-insights-store/README.md) | 🟢 deployed, both tables live | SQLite + FastAPI read API sitting between both kits above and DSH. Version-controlled copy redeployed to `linkhealth-openvino-vision` 2026-08-19 — `events` and `checkout_events` both serving real data. |
 
 `openvino-vision/` (an earlier pose-estimation showcase — fall detection,
 then PT/rehab exercise tracking) was removed from this directory on
@@ -71,7 +72,8 @@ SQLite + FastAPI read API both kits feed, and the only thing
 architecture. One table + one read endpoint per source kit (`events` /
 `GET /v1/events` for the queue kit, `checkout_events` /
 `GET /v1/checkout-events` for self-checkout) rather than one shared schema —
-see that directory's README for why. As of 2026-08-19 this is
-version-controlled and locally verified but not yet redeployed to
-`linkhealth-openvino-vision`, which is still serving from the older,
-pre-version-control copy.
+see that directory's README for why. As of 2026-08-19 this version-controlled
+copy is deployed and live on `linkhealth-openvino-vision` — both tables
+serve real data, and both DSH tools (`query_vision_events`,
+`query_checkout_events`) have been verified against it through the deployed
+agent.

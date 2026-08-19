@@ -1,11 +1,14 @@
 # infra/vision-insights-store
 
-**Status: brought under version control 2026-08-19** (previously existed
-only as hand-deployed files on `linkhealth-openvino-vision`, per
+**Status: brought under version control and redeployed, 2026-08-19**
+(previously existed only as hand-deployed files on
+`linkhealth-openvino-vision`, per
 [docs/PRD-vision-insights.md](../../docs/PRD-vision-insights.md) §8). Local
 round-trip (ingest → read API → curl) verified the same day for both event
-shapes — see "Testing locally" below. Not yet redeployed to the VM from
-this version-controlled copy.
+shapes — see "Testing locally" below — then the updated copy (with
+`checkout_events` support) was pushed to the VM and the service restarted;
+both `events` and `checkout_events` are live in production, each queried
+through the deployed DSH agent's tools.
 
 The **Insight Storage** layer: a small SQLite WAL datastore plus a thin
 FastAPI read API, sitting between the OpenVINO edge apps
@@ -48,9 +51,9 @@ read endpoint instead; a third kit follows the same pattern. This is the
 answer to the schema question left open in
 [docs/PRD-vision-insights.md](../../docs/PRD-vision-insights.md) §9 Q1.
 
-(§9 Q2 — whether DSH gets one tool with a `kind` filter or one tool per
-table — is still open; that's plugin-side design, out of scope for this
-directory.)
+(§9 Q2 — resolved as one DSH tool per table, `query_vision_events` /
+`query_checkout_events`, not a `kind` filter — that's plugin-side design,
+out of scope for this directory; see §10 for the reasoning.)
 
 ## Testing locally (no DSH needed)
 
@@ -83,12 +86,12 @@ curl "http://127.0.0.1:8099/v1/checkout-events?action=add&limit=5"
 
 ## Deploying (VM)
 
-Not yet re-run from this version-controlled copy — until then, the VM's
-`/opt/vision-insights-store/` is still the copy actually serving traffic.
-When ready: copy the four Python/service files here to
-`/opt/vision-insights-store/` on `linkhealth-openvino-vision`, `pip install
--r requirements.txt` into its venv, `sudo systemctl daemon-reload &&
-sudo systemctl restart vision-insights-api`, then run `ingest_checkout.py`
-once (in addition to the existing `ingest.py` step in
-`../openvino-self-checkout/run_demo.sh` — not wired in yet, since that kit
-isn't deployed to the VM either).
+Done, 2026-08-19: the four Python/service files here were copied to
+`/opt/vision-insights-store/` on `linkhealth-openvino-vision`, dependencies
+installed into its venv, and `vision-insights-api` restarted — the existing
+`events` data (queue-kit) was untouched by the upgrade. `ingest_checkout.py`
+was then run there against `openvino-self-checkout`'s VM-side output,
+populating `checkout_events` with real production data (335 events). To
+redeploy after further local changes: repeat that copy → `pip install -r
+requirements.txt` → `sudo systemctl daemon-reload && sudo systemctl restart
+vision-insights-api` sequence.

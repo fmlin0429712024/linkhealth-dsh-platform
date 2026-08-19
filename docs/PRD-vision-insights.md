@@ -1,19 +1,17 @@
 # PRD: Vision Insights — OpenVINO Edge Monitoring → Data Source → DSH Query
 
-**Status: Phase 1 and Phase 2 both done and verified end-to-end in production
+**Status: all four phases done and verified end-to-end in production
 (2026-08-19).** Supersedes the previous framing where the DSH plugin talked
-directly to an OpenVINO pose service (`assess_exercise_form`). **Phase 3
-(version-control the Insight Storage layer) is done and locally verified —
-not yet redeployed to the VM.** **Phase 4 (second data source,
-`automated_self_checkout`) is partially done: the kit's headless pipeline
-and its Insight Storage ingest path (§9 Q1, resolved — separate table +
-endpoint per kit) are both built and locally verified; the DSH-side tool
-surface (§9 Q2) is intentionally not started — use-case and plugin design
-work needs to happen first.** See §8-9 for detail. This spec was written
-before any Phase 3/4 code landed, per this repo's SDD convention —
-specifically because Phase 3's discovery surfaced a real schema question
-(§8) that would have been easy to miss by jumping straight to "copy the
-VM's files into the repo."
+directly to an OpenVINO pose service (`assess_exercise_form`). Phase 3
+(version-control the Insight Storage layer) is deployed — both `events` and
+`checkout_events` live on the VM. Phase 4 (second data source,
+`automated_self_checkout`) is fully done: headless pipeline, Insight Storage
+ingest path (§9 Q1), and the `query_checkout_events` DSH tool (§9 Q2, §10)
+are all built, deployed, and verified through the live agent. See §8-10 for
+detail. This spec was written before any Phase 3/4 code landed, per this
+repo's SDD convention — specifically because Phase 3's discovery surfaced a
+real schema question (§8) that would have been easy to miss by jumping
+straight to "copy the VM's files into the repo."
 
 **Production verification (2026-08-19, `linkhealth-vm2`, release
 `linkhealth-c1823f7`)**: asked the deployed LinkHealth agent "Did any zone
@@ -24,6 +22,15 @@ reported `zone0: 14 events, 1 over-capacity, max 5` / `zone1: 14, 0, max 4` /
 read API throughout Phase 2 development exactly. Full pipeline confirmed:
 OpenVINO app → JSONL → SQLite → read API → `query_vision_events` → LLM
 narration → correct answer.
+
+**Production verification, Phase 4 (2026-08-19, `linkhealth-vm2`)**: asked
+the deployed agent "购物篮里现在还剩什么？" ("what's currently in the
+basket?") — it called `query_checkout_events` and reported `apple: 8,
+banana: 42, bottle: 15, carrot: 1, orange: 1` (67 total), matching an
+independent recount of the read API's raw 335 `checkout_events` rows
+exactly. Same full pipeline as above, second data source: OpenVINO
+self-checkout app → JSONL → SQLite → read API → `query_checkout_events` →
+LLM narration → correct answer.
 
 Note: a local-only dev-profile harness (`linkhealth2`, port 3083) failed to
 register this plugin's tool during development, for reasons not fully
@@ -278,10 +285,10 @@ changes made to the VM):
 `events_api.py`, `ingest.py` (byte-for-byte the version pulled from the VM),
 `vision-insights-api.service`, and `requirements.txt` (exact pins from the
 production venv's `pip freeze`, which existed nowhere as a file before
-this). G1 and G2 both met. **Not yet redeployed** —
-`linkhealth-openvino-vision` is still serving from the older, pre-repo copy;
-redeploying this version-controlled copy is a separate step, not done as
-part of landing it here.
+this). G1 and G2 both met. **Redeployed the same day**: this
+version-controlled copy (now with `checkout_events` support added, see §9)
+was pushed to `linkhealth-openvino-vision` and the service restarted —
+existing `events` data untouched, `checkout_events` added alongside it.
 
 Resolved the open question this section originally carried into Phase 4
 (§9 Q1): rather than widening `events`' fixed columns or rebuilding
@@ -290,7 +297,7 @@ table (`checkout_events`) and their own ingest script
 (`ingest_checkout.py`), added alongside the untouched original `ingest.py`
 — see §9 for why and the verification.
 
-## 9. Phase 4 (infra done & deployed; DSH tool done, not yet deployed — 2026-08-19) — second data source: `automated_self_checkout`
+## 9. Phase 4 (done — infra and DSH tool both deployed & verified in production, 2026-08-19) — second data source: `automated_self_checkout`
 
 **Candidate kit**:
 [`automated_self_checkout`](https://github.com/openvinotoolkit/openvino_build_deploy/tree/master/ai_ref_kits/automated_self_checkout)
@@ -352,7 +359,7 @@ sits at `infra/openvino-self-checkout/repo/`, mirroring how
   matches the driver's own summary exactly. No DSH involved in this
   verification — see `infra/vision-insights-store/README.md` "Testing
   locally."
-- **G3 — done (plugin/local), not yet deployed.** `query_checkout_events`
+- **G3 — done, deployed, and verified in production.** `query_checkout_events`
   implemented in `plugins/dsh-vision-insights-plugin/lib/query-checkout-events.js`
   + registered in `lib/index.js` per Q2's resolution (§10). Unit-tested
   (`test/query-checkout-events.test.mjs`, HTTP-mocked) and verified against a
@@ -368,11 +375,15 @@ sits at `infra/openvino-self-checkout/repo/`, mirroring how
   emits tracker id `"None"` (e.g. `"#None apple"`), which an initial
   digits-only strip regex missed, splitting that item's count in two — fixed
   and pinned with a regression test. Full detail in this package's README
-  "The tools" section. **Not yet deployed** — `linkhealth-vm2`'s production
-  profile still only has `query_vision_events` wired up; deploying
-  `query_checkout_events` needs `infra/vision-insights-store`'s VM-side gap
-  closed first (§8/§9 Gap 1) if it hasn't been already, then a profile
-  config update, same as any other plugin change (see docs/ci-cd.md).
+  "The tools" section. **Deployed and verified in production, 2026-08-19**:
+  pushed to `main`, `deploy.yml`'s e2e gate + deploy job both passed, then
+  asked the live deployed agent "购物篮里现在还剩什么？" — it called
+  `query_checkout_events` (confirmed via the tool-call trace) and reported
+  `apple: 8, banana: 42, bottle: 15, carrot: 1, orange: 1` (67 total),
+  matching an independent recount of the production read API's raw 335
+  `checkout_events` rows exactly. (`query_vision_events` was regression-
+  checked pre-deploy, not re-asked through the live agent this pass — see
+  §10's local-verification note and this package's README.)
 
 **Non-goals**: same as §2 — no camera/hardware integration, no CI/CD for the
 edge app, sample-video/synthetic data only.

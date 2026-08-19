@@ -6,9 +6,10 @@
 
 DeepSeek Harness (DSH) plugins for [LinkHealth](https://github.com/fmlin0429712024)'s
 AI-enablement services for healthcare. This repo is the dedicated home for the
-**DSH packaging** of LinkHealth's capabilities — intake triage and clinical
-documentation integrity (CDI) auditing — built on the [Cordis](https://cordisjs.dev/)
-plugin runtime.
+**DSH packaging** of LinkHealth's capabilities — intake triage, clinical
+documentation integrity (CDI) auditing, and vision insights (edge people-
+counting and retail item tracking) — built on the
+[Cordis](https://cordisjs.dev/) plugin runtime.
 
 ## Quick start (3 steps)
 
@@ -37,10 +38,31 @@ this repo only carries the DSH plugin layer:
 | --- | --- | --- | --- |
 | [`plugins/dsh-triage-plugin`](plugins/dsh-triage-plugin) | host | 🟢 active | Classifies/scores/routes inbound business enquiries; hub skill + 3 spoke role prompts + a deterministic guardrail backstop (`phi_involved` ⇒ `requires_human_review`, enforced in code independent of the model). |
 | [`plugins/dsh-cdi-plugin`](plugins/dsh-cdi-plugin) | host (client half planned) | 🟢 active | Deterministic SOP-rule evaluation tools for CDI auditing, bundled SQLite rule stores, synthetic gold sets, and a packaged skills snapshot. |
-| [`plugins/dsh-linkhealth-gui-plugin`](plugins/dsh-linkhealth-gui-plugin) | client | 🟡 early | Branded front door for the DSH web UI — theme, sidebar capability launcher, Settings showcase. Purely additive/reversible; presents both capabilities above without importing either (zero business coupling). Two of its four features are still stubs — see its own README. |
+| [`plugins/dsh-vision-insights-plugin`](plugins/dsh-vision-insights-plugin) | host | 🟢 active | Reads structured events (zone occupancy, retail item add/remove) from a separate OpenVINO edge app's data source over HTTP — `query_vision_events` and `query_checkout_events`, both deterministic-facts-in/LLM-narrates-only. Deployed and verified in production. |
+| [`plugins/dsh-linkhealth-gui-plugin`](plugins/dsh-linkhealth-gui-plugin) | client | 🟡 early | Branded front door for the DSH web UI — theme, sidebar capability launcher, Settings showcase. Purely additive/reversible; presents all capabilities above without importing any of them (zero business coupling). Two of its four features are still stubs — see its own README. |
 
 All data bundled in this repo (enquiry examples, SOP rule stores, patient gold
 sets) is **synthetic/fictional** — no real patient, provider, or client data.
+
+## Vision Insights edge apps (`infra/`)
+
+`dsh-vision-insights-plugin` never talks to a camera or a model directly —
+it reads structured events over HTTP from a separate, independently-deployed
+OpenVINO edge stack that lives under [`infra/`](infra/) (not a pnpm workspace
+package, no CI/CD, manually deployed on its own VM by design):
+
+- [`infra/openvino-queue-kit`](infra/openvino-queue-kit) — people-counting /
+  capacity-flagging (YOLOv8m INT8).
+- [`infra/openvino-self-checkout`](infra/openvino-self-checkout) — retail
+  item add/remove tracking (YOLOv8m FP16).
+- [`infra/vision-insights-store`](infra/vision-insights-store) — the shared
+  SQLite + FastAPI read API both kits feed, and the only thing the DSH
+  plugin is allowed to query.
+
+See [`infra/README.md`](infra/README.md) for the directory conventions and
+[`docs/PRD-vision-insights.md`](docs/PRD-vision-insights.md) for the full
+architecture and decision history (including why this is deliberately
+decoupled from DSH rather than a direct plugin↔OpenVINO call).
 
 ## Conventions
 
@@ -125,8 +147,8 @@ wire a new plugin into the deployed profile.
 This repo is the **single source of truth** for the DSH plugins — the GCP VM
 is provisioned and deployed exclusively from `plugins/` here:
 
-- `deploy/profile-linkhealth/` — the deployable profile (triage + CDI + GUI
-  patch rows, relative paths).
+- `deploy/profile-linkhealth/` — the deployable profile (triage + CDI +
+  vision-insights + GUI patch rows, relative paths).
 - `deploy/scripts/bootstrap-vm.sh` — one-time VM provisioning (Node 22, dsh
   CLI, release layout, systemd unit).
 - `deploy/scripts/deploy.sh` — per-release: unpack → wire CDI module

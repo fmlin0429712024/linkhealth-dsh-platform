@@ -1,10 +1,9 @@
 # dsh-vision-insights-plugin
 
-**Status: `query_vision_events` and `query_checkout_events` both
-implemented, unit-tested, and verified end-to-end against a live read API
-(2026-08-19). `query_vision_events` is deployed and verified in production
-(`linkhealth-vm2`); `query_checkout_events` is verified locally, not yet
-deployed — see [docs/PRD-vision-insights.md](../../docs/PRD-vision-insights.md) §9.**
+**Status: both `query_vision_events` and `query_checkout_events` implemented,
+unit-tested, deployed, and verified end-to-end in production
+(`linkhealth-vm2`, 2026-08-19) — see
+[docs/PRD-vision-insights.md](../../docs/PRD-vision-insights.md) §9.**
 
 This plugin is the **DSH-side access point for vision insights** — and
 nothing more. Per the agreed architecture
@@ -88,21 +87,31 @@ matching the read API's data exactly.
 same item type merge; items that net to zero, i.e. added then fully removed,
 are omitted since they're not currently in the basket).
 
-**Verified locally against a live read API (2026-08-19)**, not yet run
-through the deployed agent (this tool isn't deployed yet — see the Status
-line above): ingested the real 377-event self-checkout sample run into a
-throwaway SQLite DB, served it with the actual `events_api.py`, and called
-`queryCheckoutEvents()` (the same function `execute()` calls, no mocking)
-against it over real HTTP. Result matched an independent Python recount
-exactly: `banana: +23`, `apple: -8`, `bottle` netted to 0 and was correctly
-omitted. This same pass also re-ran `query_vision_events` against its
-fixture data as a regression check — unaffected by adding the second tool.
-One real bug was caught by testing against the real sample data rather than
-only synthetic fixtures: the kit sometimes assigns tracker id `"None"` (an
-untracked-detection marker, e.g. `"#None apple"`), which an initial
-digits-only prefix regex (`^#\d+\s+`) failed to strip, splitting that item's
-count into two buckets — fixed to `^#\S+\s+` and pinned with a regression
-test (`test/query-checkout-events.test.mjs`).
+**Verification history (2026-08-19)**:
+
+1. Local, against a live read API (real HTTP, no mocking): ingested the real
+   377-event self-checkout sample run into a throwaway SQLite DB, served it
+   with the actual `events_api.py`, and called `queryCheckoutEvents()`
+   directly. Result matched an independent Python recount exactly:
+   `banana: +23`, `apple: -8`, `bottle` netted to 0 and was correctly
+   omitted. The same pass re-ran `query_vision_events` against its fixture
+   data as a regression check — unaffected by adding the second tool. One
+   real bug was caught here by testing against real sample data rather than
+   only synthetic fixtures: the kit sometimes assigns tracker id `"None"`
+   (an untracked-detection marker, e.g. `"#None apple"`), which an initial
+   digits-only prefix regex (`^#\d+\s+`) failed to strip, splitting that
+   item's count into two buckets — fixed to `^#\S+\s+` and pinned with a
+   regression test (`test/query-checkout-events.test.mjs`).
+2. **Production, through the deployed agent**: after deploying, asked it
+   "购物篮里现在还剩什么？" ("what's currently in the basket?") over the
+   live web UI. It called `query_checkout_events` (visible in the tool-call
+   trace, not a guess) and reported `apple: 8, banana: 42, bottle: 15,
+   carrot: 1, orange: 1` — 67 items total. Independently recomputed straight
+   from the production read API's raw 335 `checkout_events` rows: identical,
+   item for item. (Different numbers from step 1's 377-event local run are
+   expected — separate runs of the upstream kit against different dependency
+   versions naturally detect somewhat differently; see the self-checkout
+   kit's own README "Running" section.)
 
 ## Config
 
