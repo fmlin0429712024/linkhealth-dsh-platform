@@ -2,7 +2,18 @@
 
 **Status: Phase 1 and Phase 2 both done and verified end-to-end in production
 (2026-08-19).** Supersedes the previous framing where the DSH plugin talked
-directly to an OpenVINO pose service (`assess_exercise_form`).
+directly to an OpenVINO pose service (`assess_exercise_form`). **Phase 3
+(version-control the Insight Storage layer) is done and locally verified —
+not yet redeployed to the VM.** **Phase 4 (second data source,
+`automated_self_checkout`) is partially done: the kit's headless pipeline
+and its Insight Storage ingest path (§9 Q1, resolved — separate table +
+endpoint per kit) are both built and locally verified; the DSH-side tool
+surface (§9 Q2) is intentionally not started — use-case and plugin design
+work needs to happen first.** See §8-9 for detail. This spec was written
+before any Phase 3/4 code landed, per this repo's SDD convention —
+specifically because Phase 3's discovery surfaced a real schema question
+(§8) that would have been easy to miss by jumping straight to "copy the
+VM's files into the repo."
 
 **Production verification (2026-08-19, `linkhealth-vm2`, release
 `linkhealth-c1823f7`)**: asked the deployed LinkHealth agent "Did any zone
@@ -34,6 +45,65 @@ App，唯一连接点是数据源（Insight Storage）；DSH 侧在集成完成�
 | 2026-08-19 | **Intelligent Queue Management kit (YOLOv8m)** as the OpenVINO visual app | ✅ **current direction** — people counting in zones + capacity flagging, sample video included, pure simulation |
 | 2026-08-19 | **Complete decoupling**: OpenVINO app (own storage) ‖ DSH (own app); integration only via data-source access, future | ✅ **current architecture** |
 | 2026-08-19 | **Phase 1 done-when redefined**: done once the OpenVINO app produces a real, structured data source (verified — `insights.jsonl`, 43 lines, real run). The standalone "task 7" throwaway LLM-read script is dropped — that verification now happens directly inside Phase 2's `query_vision_events` tool/tests instead of a one-off script that would've been rebuilt anyway. | ✅ **Phase 1 complete**; Phase 2 starts next |
+
+### Evidence behind the two rejected/retired directions (2026-08-19)
+
+The pose-estimation scaffolding this evidence came from
+(`infra/openvino-vision/`: `serve.py`, `timeline_test.py`, `pt_test.py`, test
+images) was **removed from the working tree on 2026-08-19** — it was
+exploratory infrastructure from before the decoupled architecture above was
+settled, not a maintained deliverable, and this repo already has the
+precedent of not keeping retired code around (see
+`dsh-vision-insights-plugin`'s README on why `assess_exercise_form` was
+deleted rather than archived). The code is recoverable from git history if
+ever needed; the numbers below are what actually justified the two verdicts
+in the table, so they're captured here instead of only in a deleted file.
+
+**Why fall/lying-pose detection was rejected**: `human-pose-estimation-0001`
+was tested against a real fall clip
+([computationalcore/fall-detection](https://github.com/computationalcore/fall-detection),
+`example/demo.mp4`, 21.3s/532 frames), sampling every 8 frames from t=15.2s
+onward:
+
+```
+t=15.2–15.5s  upright, Low
+t=15.8s       insufficient_evidence
+t=16.2s       possible_fall_or_lying, High, torso angle 71.5°   <- caught it, one frame
+t=16.5–21.0s  insufficient_evidence, continuously, for the rest of the clip
+```
+
+It caught the fall transition confidently in exactly one frame, then lost
+the signal entirely for the ~4.5s the subject lay still — the opposite of
+what you'd expect if a settled pose were easier to read than a dynamic one.
+Conclusion: the model is trained mostly on upright/pedestrian poses, so a
+person lying flat is out-of-distribution for the model itself, not a
+decoder bug or a threshold-tuning problem.
+
+**Why PT/rehab form tracking (`assess_exercise_form`) was verified, then
+separately retired for an architecture reason**: the same model, applied to
+a bicep-curl clip
+([stevenzchen/pose-trainer](https://github.com/stevenzchen/pose-trainer),
+`sample_bicep_curl.mp4`), tracking elbow angle (shoulder–elbow–wrist) across
+20 sampled frames of one rep:
+
+```
+t=0.0s  156.8°  (arm extended)            avg confidence 0.44
+t=0.8s   35.7°  (fully curled)            avg confidence 0.29
+t=0.9s  175.4°  <- outlier reading                          avg confidence 0.12 (lowest in the clip)
+t=1.0s   35.6°  (back to curled, correct) avg confidence 0.31
+t=2.2s  159.6°  (extended again)          avg confidence 0.44
+```
+
+This traced a clean rep (extended → curled → extended) as a smooth angle
+curve; confidence stayed moderate (~0.4) and never collapsed the way it did
+for the lying pose. The one clearly wrong reading (175.4°) coincided with
+the single lowest confidence value in the whole clip (0.12) — the confidence
+score itself would have caught it. This *use case* worked; it was retired
+anyway (§ "Why the previous tool is gone" in
+`dsh-vision-insights-plugin`'s README) because it called the OpenVINO
+service directly from the DSH plugin, which is exactly the tight coupling
+the decoupled architecture below was adopted to avoid — not because the
+tracking itself was unreliable.
 
 ## 2. Goals & non-goals
 
@@ -155,3 +225,220 @@ marker, not a zone-occupancy sample, and would skew any aggregate over
   actually pushed/deployed to vm2, vs. built and tested but held back from a
   real push — **confirm with the user before pushing to GitHub** (unrelated
   standing instruction, see `DSH-HANDOFF-PROMPT.md`).
+
+## 8. Phase 3 (done, 2026-08-19) — version-control the Insight Storage layer
+
+**Problem**: Phase 2's SQLite ingest script and FastAPI read API were written
+and deployed straight onto `linkhealth-openvino-vision`
+(`/opt/vision-insights-store/`) and were never committed anywhere — there is
+no source-of-truth copy in this repo, no tests, no review path, no diff
+history. Every other piece of infra here (the OpenVINO kits, the DSH
+plugins) is version-controlled even where it isn't CI/CD'd; this layer is the
+one exception, and it's the piece both Phase 2 and any future data source
+depend on.
+
+**Current state** (confirmed via read-only `gcloud compute ssh
+--tunnel-through-iap` into `linkhealth-openvino-vision`, 2026-08-19 — no
+changes made to the VM):
+
+- `/opt/vision-insights-store/events_api.py` — FastAPI app, single route
+  `GET /v1/events?since=&zone=&limit=&include_markers=`, reads SQLite
+  read-only (`mode=ro`), returns rows shaped
+  `{ts, zone, count, avg_count, capacity, over_capacity, source, event}`.
+  Also `GET /health` (row count).
+- `/opt/vision-insights-store/ingest.py` — takes a JSONL path (default: the
+  queue kit's `insights.jsonl`) and a DB path, **drops and rebuilds the
+  `events` table from scratch every run** (the source JSONL is a per-demo-run
+  snapshot, not an append-only stream — see original code comment). Table
+  columns are exactly the queue-kit event shape from §4 and hard-coded to
+  it — `zone`, `count`, `avg_count`, `capacity`, `over_capacity` are all
+  `NOT NULL` columns.
+- `vision-insights-api.service` (systemd): `uvicorn events_api:app --host
+  0.0.0.0 --port 8090`, user `fmlin`, `Restart=on-failure`.
+- venv `pip freeze`: `fastapi==0.141.1`, `uvicorn==0.52.3`,
+  `pydantic==2.13.4`, plus transitive deps — no `requirements.txt` exists
+  anywhere today; this freeze is the only record of the pinned versions
+  actually running in production.
+
+**Goals**:
+- **G1**: Land `events_api.py`, `ingest.py`, the systemd unit, and a pinned
+  `requirements.txt` in this repo (proposed: `infra/vision-insights-store/`,
+  alongside `infra/openvino-vision/` and the kit dirs) as the source of
+  truth.
+- **G2**: A change to this layer becomes "edit in repo → manually redeploy to
+  the VM," matching the OpenVINO kits' status (version-controlled, manually
+  deployed, no CI/CD) instead of "SSH in and hand-edit the running file."
+
+**Non-goals**:
+- No CI/CD for this layer — same reasoning as the OpenVINO app side (§2
+  non-goals): it's edge/support infra, not a DSH plugin.
+- Not migrating off SQLite/FastAPI.
+
+**Done (2026-08-19)**: landed at `infra/vision-insights-store/` —
+`events_api.py`, `ingest.py` (byte-for-byte the version pulled from the VM),
+`vision-insights-api.service`, and `requirements.txt` (exact pins from the
+production venv's `pip freeze`, which existed nowhere as a file before
+this). G1 and G2 both met. **Not yet redeployed** —
+`linkhealth-openvino-vision` is still serving from the older, pre-repo copy;
+redeploying this version-controlled copy is a separate step, not done as
+part of landing it here.
+
+Resolved the open question this section originally carried into Phase 4
+(§9 Q1): rather than widening `events`' fixed columns or rebuilding
+`ingest.py` to be schema-generic, self-checkout's events got their own
+table (`checkout_events`) and their own ingest script
+(`ingest_checkout.py`), added alongside the untouched original `ingest.py`
+— see §9 for why and the verification.
+
+## 9. Phase 4 (infra done & deployed; DSH tool done, not yet deployed — 2026-08-19) — second data source: `automated_self_checkout`
+
+**Candidate kit**:
+[`automated_self_checkout`](https://github.com/openvinotoolkit/openvino_build_deploy/tree/master/ai_ref_kits/automated_self_checkout)
+— retail item add/remove detection and tracking from a video stream.
+Research clone (read-only, sparse checkout + LFS sample video, gitignored)
+sits at `infra/openvino-self-checkout/repo/`, mirroring how
+`infra/openvino-queue-kit/repo/` was set up for Phase 1.
+
+**Why this is a bigger lift than the queue kit was (Phase 1)**:
+
+- **No headless entrypoint.** The queue kit's `app.py` already supported
+  `--headless` and only needed a small patch to add `--insights_log`
+  (§5 task 6). `automated_self_checkout`'s `directrun.py` has no CLI mode at
+  all — its detection/tracking loop, `stream_object_detection()`, is a
+  **Gradio generator callback** (`yield gr.skip()` / UI component updates),
+  and `__main__` calls `demo.launch(inbrowser=True, ...)` to start a Gradio
+  web server. Getting a "run once over the sample video, write structured
+  events, exit" flow (the queue-kit pattern this PRD depends on) means
+  extracting the core loop out of the Gradio callback — not a config flag.
+- **Different event shape.** The kit already emits structured events
+  internally — `plog(logtable, message, pclass, pop)` appends
+  `{time, class, action(add/remove), message}` rows — but to a Gradio
+  `DataFrame` for on-screen display, not to a file. This shape (item
+  add/remove) doesn't fit the current `events` table (§8) at all, unlike a
+  same-shape second queue-style deployment would.
+- **Heavier dependencies**: `gradio==6.7.0` (web/socket stack), a PyTorch CPU
+  wheel (`--extra-index-url https://download.pytorch.org/whl/cpu`),
+  `ultralytics`, `onnx`, `supervision`, `nncf` — meaningfully more than the
+  queue kit. Worth checking `linkhealth-openvino-vision`'s disk/RAM headroom
+  before running both kits on the same VM.
+- **Install script doesn't transfer.** Upstream's `setup/setup.sh` assumes
+  Ubuntu 22.04+, a `~/oneclickai` home-directory install, and apt-installed
+  system packages — it doesn't match this repo's `/opt/<kit>` deployment
+  convention. Only the underlying steps (venv, `pip install -r
+  requirements.txt`, model conversion) transfer; the one-click script itself
+  doesn't.
+
+**Goals** (mirrors §2's G1-G4 shape for the queue kit):
+- **G1 — done**: a headless driver
+  (`infra/openvino-self-checkout/headless_driver.py`) runs once over the
+  bundled sample video and writes structured JSONL events, without editing
+  the vendored `directrun.py`. Along the way it also worked around a real
+  upstream bug — `ascd_init()`'s default IR export is static-batch
+  (`dynamic=False`), but the detection loop always calls `model.track(...,
+  batch=14, ...)`, which fails against a static-batch model; the driver
+  pre-exports with `dynamic=True` instead. Verified 2026-08-19: 377 events
+  (196 add / 181 remove) from the 21.3s/640-frame sample video, ~30-40s
+  runtime. Caveat: verified against newer, mutually-compatible dependency
+  versions, not the exact pins in `requirements.txt` — see that kit's
+  README "Dependency note."
+- **G2 — done**: those events land in Insight Storage via a new table +
+  ingest script + read endpoint, kept separate from the queue kit's (§8's
+  resolution to Q1 below) — `checkout_events` /
+  `infra/vision-insights-store/ingest_checkout.py` /
+  `GET /v1/checkout-events`. Verified 2026-08-19 with a full local
+  round-trip: ran the headless driver → `ingest_checkout.py` → local
+  `uvicorn` → curl `/v1/checkout-events?action=add` and
+  `/v1/checkout-events?limit=1000`, confirmed the 196/181 add/remove split
+  matches the driver's own summary exactly. No DSH involved in this
+  verification — see `infra/vision-insights-store/README.md` "Testing
+  locally."
+- **G3 — done (plugin/local), not yet deployed.** `query_checkout_events`
+  implemented in `plugins/dsh-vision-insights-plugin/lib/query-checkout-events.js`
+  + registered in `lib/index.js` per Q2's resolution (§10). Unit-tested
+  (`test/query-checkout-events.test.mjs`, HTTP-mocked) and verified against a
+  live read API: ingested the real 377-event self-checkout sample into a
+  throwaway SQLite DB, served it with the actual `events_api.py`, called the
+  tool's real function (no mocking) over HTTP — net-basket summary
+  (`banana: +23`, `apple: -8`, `bottle` netted to 0 and correctly omitted)
+  matched an independent Python recount exactly. The same pass re-ran
+  `query_vision_events` against its fixture as a regression check — still
+  correct after adding the second tool (`zone0: 2 events, 1 over-capacity,
+  max 4`, matching pre-change behavior). One real bug surfaced by testing
+  against real data instead of only synthetic fixtures: the kit sometimes
+  emits tracker id `"None"` (e.g. `"#None apple"`), which an initial
+  digits-only strip regex missed, splitting that item's count in two — fixed
+  and pinned with a regression test. Full detail in this package's README
+  "The tools" section. **Not yet deployed** — `linkhealth-vm2`'s production
+  profile still only has `query_vision_events` wired up; deploying
+  `query_checkout_events` needs `infra/vision-insights-store`'s VM-side gap
+  closed first (§8/§9 Gap 1) if it hasn't been already, then a profile
+  config update, same as any other plugin change (see docs/ci-cd.md).
+
+**Non-goals**: same as §2 — no camera/hardware integration, no CI/CD for the
+edge app, sample-video/synthetic data only.
+
+**Q1 (schema) — resolved, 2026-08-19**: separate table + ingest script +
+read endpoint per kit (`checkout_events` / `ingest_checkout.py` /
+`GET /v1/checkout-events`), not a widened `events` table or parallel DBs —
+see `infra/vision-insights-store/README.md` "Why two tables instead of
+one." Establishes the pattern a third kit would follow.
+
+**Q2 (DSH tool surface) — resolved, 2026-08-19**: self-checkout gets its own
+tool, `query_checkout_events`, in the existing `dsh-vision-insights-plugin`
+package (not a `source`/`kind` filter grafted onto `query_vision_events`,
+and not a new plugin). See §10 for the full reasoning, including why this
+does **not** need a triage-style dispatch layer in front of it. G3 (tool
+design itself — parameters, summary shape) is next, unblocked.
+- **Q3 (capacity)**: benchmark `linkhealth-openvino-vision`'s disk/RAM before
+  installing this kit's heavier deps alongside the queue kit's.
+
+## 10. Design decision — tool routing inside `dsh-vision-insights-plugin` (2026-08-19)
+
+**Question**: now that the plugin is about to hold two tools —
+`query_vision_events` (zone occupancy) and the planned
+`query_checkout_events` (self-checkout basket events) — does it need an
+explicit *dispatch* layer, modeled on `dsh-triage-plugin`'s `intake-triage`
+skill, to decide which tool answers a given user question? Or is relying on
+the DSH/Cordis tool-calling mechanism — the LLM matching a question against
+each `tools.register(...)` call's `name`/`description`/`parameters`, the
+same mechanism that already selects `query_vision_events` among every other
+tool in the profile today — sufficient on its own?
+
+**Decision**: no dispatcher. `query_checkout_events` is added as a second,
+independently-described tool in the same package; routing between the two
+is left entirely to normal function-calling tool selection.
+
+**Why `intake-triage`'s pattern doesn't transfer**, comparing what each
+mechanism actually does (`plugins/dsh-triage-plugin/skills/intake-triage/SKILL.md`
+vs. plain tool selection):
+
+| | Function-calling tool selection (routes `query_vision_events` / `query_checkout_events`) | `intake-triage` (dsh-triage-plugin's hub skill) |
+|---|---|---|
+| What triggers it | The LLM reading tool descriptions while deciding what to call | A fixed multi-step workflow that runs on every inbound enquiry |
+| What it decides | Which one existing tool answers this turn's question | Service-line classification **+** a scored complexity rubric (4 dimensions, 0–8) **+** a mandatory PHI/compliance guardrail |
+| Is the mechanism itself business logic? | No — pure dispatch; each tool stays simple and independent | Yes — the classification and guardrail *are* the business logic; routing is a side effect of running it |
+| Cost of it picking wrong | Wrong/no tool called this turn — low stakes, correctable next turn | Missed PHI guardrail → real compliance exposure — this risk is *why* the skill is hand-written prose instead of tool descriptions |
+
+`intake-triage` isn't "a router that happens to also score things" — the
+scoring and the hard guardrail (`phi_involved` → `requires_human_review`,
+no auto-routing) are the entire reason it exists as a prose-driven skill
+rather than plain tool descriptions. `query_vision_events` and
+`query_checkout_events` answer disjoint questions from disjoint data (zone
+occupancy vs. shopping-basket contents) with no scoring, no guardrail, and
+no shared decision that a name+description match could get wrong in a way
+that matters. Nothing in this pair has intake-triage's shape.
+
+**When to revisit** (so this isn't a silent permanent assumption):
+- A third vision-insight source arrives whose tool description overlaps an
+  existing one enough that the LLM could plausibly pick the wrong tool.
+- A cross-cutting guardrail requirement appears that must run *before*
+  either tool executes (e.g. a future PHI-adjacent vision data source).
+- A user question needs data combined from both tools in one answer
+  (routing to "both" or synthesizing across them), not a single pick.
+
+None of these hold today, so no dispatcher is being built now.
+
+**Consequence for §9 G3**: proceed straight to designing
+`query_checkout_events` itself (parameters, summary shape) as a second
+`tools.register(...)` entry in `plugins/dsh-vision-insights-plugin/lib/index.js`
+— that design work is no longer blocked on a routing-architecture decision.
