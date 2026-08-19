@@ -68,10 +68,6 @@ jobs:
           (cd dist/profile && npm install dsh-vision-router@1.2.2 --no-save --no-package-lock --no-audit --no-fund)
           # relative symlink — keeps the release directory self-contained
           ln -s ../plugins/dsh-linkhealth-gui-plugin dist/profile/node_modules/dsh-linkhealth-gui-plugin
-          # synthetic demo images for the assess_exercise_form tool on the VM
-          # (checked-in testdata, no real patient data — see infra/openvino-vision)
-          mkdir -p dist/profile/testdata
-          cp -r infra/openvino-vision/testdata/. dist/profile/testdata/
           tar -czf "linkhealth-${SHA}.tar.gz" -C dist profile
           echo "release=linkhealth-${SHA}.tar.gz" >> "$GITHUB_ENV"
 

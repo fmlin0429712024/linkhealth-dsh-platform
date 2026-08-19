@@ -22,16 +22,19 @@
       config:
         bundledSkills: true
 
-# ── LinkHealth Vision (host: assess_exercise_form, PT/rehab form check) ─────
-# baseUrl points at the OpenVINO pose-estimation showcase VM
-# (linkhealth-openvino-vision, 10.128.0.11:8080) — reachable from this
-# profile's VM because both sit on the same VPC (default network,
-# us-central1). See infra/openvino-vision/README.md.
+# ── LinkHealth Vision Insights (host: query_vision_events) ──────────────────
+# baseUrl points at the Phase 2 events read API (SQLite-backed, fed from the
+# Intelligent Queue Management kit's insights.jsonl) on
+# linkhealth-openvino-vision, port 8090 — reachable from this profile's VM
+# (linkhealth-vm2) because both sit on the same VPC (default network,
+# us-central1). The OpenVINO app itself is a separate, manually-deployed
+# application — this plugin never talks to it directly. See
+# docs/PRD-vision-insights.md and infra/openvino-queue-kit/.
 - insert:
     - id: linkhealth-vision
       name: './plugins/dsh-vision-insights-plugin/lib/index.js'
       config:
-        baseUrl: 'http://10.128.0.11:8080'
+        baseUrl: 'http://10.128.0.11:8090'
 
 # ── dsh-vision-router (npm-installed at build time into profile/node_modules;
 # see .github/workflows/deploy.yml "Build the deploy unit"): eyes for text-only

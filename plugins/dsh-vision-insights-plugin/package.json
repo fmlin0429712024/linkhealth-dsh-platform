@@ -2,7 +2,7 @@
   "name": "dsh-vision-insights-plugin",
   "version": "0.1.0",
   "private": true,
-  "description": "LinkHealth Vision Insights for DeepSeek Harness: DSH-side access point for vision insights (scaffold). The OpenVINO visual app is a separate application with its own insight storage; this plugin will query that data source (query_vision_events) once the Phase 2 integration lands. Registers no tools yet.",
+  "description": "LinkHealth Vision Insights for DeepSeek Harness: DSH-side access point for vision insights. The OpenVINO visual app (Intelligent Queue Management kit) is a separate application with its own insight storage (SQLite behind a thin read API); this plugin's query_vision_events tool reads that data source via a baseUrl config entry — deterministic facts, LLM narrates.",
   "type": "module",
   "main": "lib/index.js",
   "scripts": {
@@ -30,7 +30,7 @@
     "vision",
     "insights",
     "edge",
-    "pose-estimation",
+    "queue-management",
     "linkhealth"
   ],
   "author": {

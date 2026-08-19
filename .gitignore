@@ -14,5 +14,10 @@ DSH-HANDOFF-PROMPT.md
 .dsh-test-home/
 .dsh-e2e-home/
 
+# Local working clone of the upstream OpenVINO kit (separate app, own repo/
+# history, deployed manually per docs/PRD-vision-insights.md — not a
+# deliverable of this repo, and the LFS video would bloat it)
+infra/openvino-queue-kit/repo/
+
 # Runtime data written by plugins into the workspace root (e.g. triage log)
 /data/

@@ -46,3 +46,14 @@ for zone, z in sorted(zones.items()):
     print(f"    {zone}: events={z['events']} over_capacity={z['over']} max_count={z['max_count']}")
 print("==> demo complete (self-contained, no external support)")
 PY
+
+# Phase 2: refresh the SQLite read datastore from this run's log. The events
+# API (vision-insights-api.service, port 8090) reads from
+# /opt/vision-insights-store/events.db — this keeps it in sync with the
+# latest demo run. See docs/PRD-vision-insights.md §6.
+if [ -x /opt/vision-insights-store/venv/bin/python3 ]; then
+  echo "==> Refreshing insight-store SQLite DB ..."
+  /opt/vision-insights-store/venv/bin/python3 /opt/vision-insights-store/ingest.py "$KIT/$LOG"
+else
+  echo "==> Skipping SQLite refresh (vision-insights-store venv not present on this host)"
+fi
