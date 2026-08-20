@@ -32,6 +32,65 @@ this repo only carries the DSH plugin layer:
 - [`clinical-documentation-audit-poc`](https://github.com/fmlin0429712024/clinical-documentation-audit-poc) —
   the CDI audit system and its `.agents/skills` source of truth.
 
+## Architecture: bundle → profile → plugin
+
+Three distinct layers, easy to conflate but worth keeping separate:
+
+```mermaid
+graph TD
+    subgraph Bundles["Bundles — platform-provided building blocks (@deepseek-ai/*)"]
+        Base["dsh-base<br/>LLM providers · sessions · credentials · tool execution"]
+        WebApp["dsh-web-app<br/>browser chat UI"]
+        Headless["dsh-headless<br/>event/schedule-triggered, no UI"]
+    end
+
+    subgraph Profiles["Profiles — our products (bundle choice + our own patch layer)"]
+        LH["linkhealth profile<br/>(current)"]
+        LHH["linkhealth-headless profile<br/>(planned)"]
+    end
+
+    subgraph Plugins["Plugins — capabilities, self-built + adopted"]
+        T["dsh-triage-plugin"]
+        C["dsh-cdi-plugin"]
+        V["dsh-vision-insights-plugin"]
+        G["dsh-linkhealth-gui-plugin"]
+        R["dsh-vision-router (adopted)"]
+    end
+
+    Base --> LH
+    WebApp --> LH
+    Base --> LHH
+    Headless --> LHH
+
+    LH --> T
+    LH --> C
+    LH --> V
+    LH --> G
+    LH --> R
+
+    LHH -.->|not yet built| F["future event/schedule-driven plugins"]
+```
+
+- **Bundle**: a published `@deepseek-ai/*` package that provides a whole
+  interaction mode. `dsh-base` (core services every profile needs) is
+  shared; `dsh-web-app` vs. `dsh-headless` is the one thing that actually
+  differs between a chat-driven product and an event/schedule-driven one —
+  not "no base," a *different* mode bundle on the same base.
+- **Profile**: our choice of bundles (`package.json`'s `dsh.profile.bundles`)
+  plus our own plugins, wired in via `cordis.patch.yml`. `linkhealth` is the
+  only one running today; `linkhealth-headless` (event/schedule-triggered
+  automation, no web UI) is planned, no plugins built for it yet.
+- **Plugin**: an individual capability — self-built (the four `plugins/`
+  packages below) or adopted from the DSH ecosystem (`dsh-vision-router`,
+  see "What's here" below for the adopt-vs-build distinction).
+
+Right now each plugin is inserted into `linkhealth`'s `cordis.patch.yml`
+individually. As this grows, the natural next step is grouping related
+plugins into our *own* reusable bundle package (e.g. a healthcare-ops
+bundle) that any profile — `linkhealth` today, `linkhealth-headless`
+tomorrow — can pull in as one unit instead of repeating the same insert
+list per profile.
+
 ## What's here
 
 | Package | Plane(s) | Status | What it does |
