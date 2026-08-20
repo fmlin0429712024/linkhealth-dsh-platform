@@ -175,6 +175,18 @@ ahead of the cloud fallback in that same priority order:
 # ships new releases every day or two.
 ```
 
+**Incident hit on first deploy of this version bump (2026-08-20, fixed same
+day)**: 1.7.0 imports `@deepseek-ai/dsh-llm-deepseek` directly (its rebuilt
+official-DeepSeek-route detection — not present in 1.2.2), but
+`deploy/scripts/deploy.sh` only wired the equivalent `@deepseek-ai/*`
+module-resolution fallback for `dsh-cdi-plugin`, not for `dsh-vision-router`
+(installed straight into the release's own `node_modules`, not under
+`plugins/`). Result: `ERR_MODULE_NOT_FOUND`, service crash-loop, failed
+health check. Fixed by extending the same symlink trick to
+`node_modules/dsh-vision-router/node_modules/@deepseek-ai` in `deploy.sh` —
+a version bump of a plugin with direct `@deepseek-ai/*` imports needs this
+checked, the same way `dsh-cdi-plugin` already required it.
+
 Topology: `linkhealth-vm2` (10.128.0.10) → `linkhealth-openvino-vision`
 (10.128.0.11:8092), same VPC subnet (`default`, `10.128.0.0/20`) — no
 tunnel between the two VMs, direct internal networking (same pattern

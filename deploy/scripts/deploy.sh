@@ -36,6 +36,20 @@ mkdir -p "$RELEASE_DIR/plugins/dsh-cdi-plugin/node_modules"
 ln -sfn /opt/linkhealth/dsh-home/profiles/node_modules/@deepseek-ai \
         "$RELEASE_DIR/plugins/dsh-cdi-plugin/node_modules/@deepseek-ai"
 
+echo "==> Wire dsh-vision-router module resolution (same flat-fallback trick)"
+# dsh-vision-router@1.7.0 imports @deepseek-ai/dsh-llm-deepseek directly
+# (its "rebuilt native DeepSeek adapter" / official-route detection, added
+# somewhere after the 1.2.2 this repo originally pinned -- see
+# docs/deployment-gcp.md's vision multimodality section). It's npm-installed
+# straight into the release's own node_modules (not under plugins/), so the
+# symlink target is its own node_modules dir, not a plugin's. First hit in
+# production 2026-08-20: the 1.2.2->1.7.0 bump needed for httpProviders
+# support silently introduced this new import, which the deploy that bumped
+# it didn't yet wire -- caused a health-check failure / crash loop.
+mkdir -p "$RELEASE_DIR/node_modules/dsh-vision-router/node_modules"
+ln -sfn /opt/linkhealth/dsh-home/profiles/node_modules/@deepseek-ai \
+        "$RELEASE_DIR/node_modules/dsh-vision-router/node_modules/@deepseek-ai"
+
 # the dsh service runs as the deploy user and writes back cordis.yml into the
 # profile dir, so the release must be owned by that user (not root)
 chown -R "$SUDO_USER" "$RELEASE_DIR"
