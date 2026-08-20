@@ -57,6 +57,27 @@ for the convention on when to adopt vs. build:
 All data bundled in this repo (enquiry examples, SOP rule stores, patient gold
 sets) is **synthetic/fictional** — no real patient, provider, or client data.
 
+## Vision AI: two integration patterns, one future direction
+
+Two different edge/vision model classes are wired into DSH here — on
+purpose, in two different ways, because the models called for it:
+
+| | YOLOv8m (detection/counting) | Phi-3.5-vision (VLM, image Q&A) |
+| --- | --- | --- |
+| Plugin | **Self-built**: `dsh-vision-insights-plugin` | **Adopted**: `dsh-vision-router` (third-party) + config |
+| Pattern | Decoupled data source — model writes structured events; plugin only queries them over HTTP (never touches the model) | Local model as a backend behind an existing general-purpose attachment-vision plugin |
+| Proves | DSH can front a narrow, deterministic edge model with a purpose-built query tool | DSH can front a general VLM with **zero custom plugin code** — config only |
+| Status | production, live queries | production, verified end-to-end |
+
+**Today this is a capability demo, not a business solution** — the two run
+standalone. YOLO counts/tracks; Phi-3.5 answers ad hoc image questions.
+Neither uses the other's output.
+
+**The real value is next**: a purpose-built plugin combining detection
+(*what/where*, from YOLO) with vision-language reasoning (*what does it
+mean*, from Phi-3.5) into one coherent capability for a specific LinkHealth
+use case — not two demos running side by side.
+
 ## Vision Insights edge apps (`infra/`)
 
 `dsh-vision-insights-plugin` never talks to a camera or a model directly —
