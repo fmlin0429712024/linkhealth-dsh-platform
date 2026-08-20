@@ -91,6 +91,44 @@ Client plugins are loaded by name: symlink them into
 `dist/profile/node_modules/` in the build step (like
 `dsh-linkhealth-gui-plugin`).
 
+## Adopting an existing plugin (vs. building a new one)
+
+Not every capability needs a plugin we author. If a solid, actively
+maintained plugin already exists in the wider DSH ecosystem and does what's
+needed, **adopt it instead of rebuilding it** — this repo's first case is
+`dsh-vision-router` (gives the text-only main model "eyes" for image
+attachments).
+
+**Bar for adoption**: actively maintained, real published package, genuine
+adoption signal (not a one-person weekend repo). We're trusting someone
+else's code and update cadence, not just their API shape.
+
+**How it differs from building one:**
+
+- It does **not** live under `plugins/`, is **not** part of the pnpm
+  workspace, and is **not** checked by `scripts/check-plugin-contract.mjs`
+  (that check only scans `plugins/*`) — there's no package.json/README/test
+  entry of ours to maintain, because the code isn't ours.
+- It's declared with a single row in
+  `deploy/profile-linkhealth/cordis.patch.yml` (`insert: - id: ... / name:
+  '<npm-package-name>'`), installed straight from npm into the release
+  profile's `node_modules` at deploy time (see the Deploy workflow's build
+  step) — never copied into `plugins/`.
+- **Documentation is deliberately lighter than a self-built plugin**: one
+  row in the root [README.md](../README.md#whats-here) "adopted" table
+  (name, npm link, one-line purpose) plus an inline comment on its
+  `cordis.patch.yml` row explaining what it does and why it was adopted.
+  No dedicated README or PRD of our own — we don't own the code, so we
+  don't carry the documentation burden of owning it.
+- **If real configuration/integration work is layered on top** (e.g.
+  pointing it at a locally-deployed model instead of its default backend),
+  that wiring is operationally significant enough to need its own place —
+  don't try to cram it into the one-line inventory entry. Put it wherever
+  the rest of that integration's operational detail already lives (for
+  `dsh-vision-router` → local Phi-3.5-vision, that's
+  [deployment-gcp.md](deployment-gcp.md), since it's fundamentally about how
+  two production VMs are wired together — not a new file just for this).
+
 ## Conventions enforced by CI
 
 - Folder name == `package.json` `name`; name matches `dsh-<domain>-plugin`.

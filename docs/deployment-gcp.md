@@ -129,11 +129,72 @@ git push origin main                    # auto-deploys when plugins/deploy/workf
 
 Verify: `systemctl status linkhealth` → active; `curl localhost:3080` on the
 VM → the LinkHealth branded UI; run one triage case and one CDI rule query —
-the guardrail backstop and the deterministic rules run on the VM too. The
-vision plugin (`assess_exercise_form`) calls the OpenVINO showcase VM
-(`10.128.0.11:8080`, same VPC) — demo it on
-`/opt/linkhealth/current/testdata/pt-exercise-verified/sample-pt-*.jpg`
-(shipped with the release).
+the guardrail backstop and the deterministic rules run on the VM too.
+
+## Vision multimodality: dsh-vision-router → local Phi-3.5-vision
+
+One plugin, one existing model-picker entry, two backends in a fallback
+chain — not two separate features. `dsh-vision-router` (third-party, see
+[plugin-development.md](plugin-development.md#adopting-an-existing-plugin-vs-building-a-new-one))
+gives the text-only DeepSeek main model "eyes." Its own code owns a fixed
+backend priority order (registered adapters → local Ollama → local LM
+Studio → custom `httpProviders` → free OVH cloud fallback, always last) —
+we only ever *configure* which of those slots are filled, never modify the
+plugin's routing logic itself.
+
+**Before this change**: every slot except the last was empty, so image
+attachments always fell straight through to the free OVH cloud engine — the
+"DeepSeek + 自动识图" model-picker entry (auto-created by `autoWrapProviders`,
+which never touches the original "DeepSeek" entry — plain-text selection is
+completely unaffected either way) was already working on that cloud path.
+
+**What changed**: the previously-empty `httpProviders` slot now points at a
+locally-deployed Phi-3.5-vision-instruct model
+([infra/openvino-vlm-kit](../infra/openvino-vlm-kit/README.md)), which sits
+ahead of the cloud fallback in that same priority order:
+
+```yaml
+# deploy/profile-linkhealth/cordis.patch.yml — config override on the
+# existing 'vision-router' id (not a second insert)
+- id: vision-router
+  config:
+    httpProviders:
+      - name: phi35-vision-local
+        baseURL: 'http://10.128.0.11:8092/v1'   # linkhealth-openvino-vision, same VPC
+        model: 'phi-3.5-vision-local'
+        maxTokens: 200
+```
+
+```yaml
+# .github/workflows/deploy.yml — version bump, not a new install step
+# dsh-vision-router@1.2.2 → @1.7.0: 1.2.2 (pinned when the plugin was first
+# adopted 2026-08-17, wired with zero custom config) predates the
+# httpProviders/local-backend feature entirely (added in the plugin's own
+# v1.5.0) — the config above would have been silently ignored without this
+# bump. Pin to a version you've actually tested, not "latest": this plugin
+# ships new releases every day or two.
+```
+
+Topology: `linkhealth-vm2` (10.128.0.10) → `linkhealth-openvino-vision`
+(10.128.0.11:8092), same VPC subnet (`default`, `10.128.0.0/20`) — no
+tunnel between the two VMs, direct internal networking (same pattern
+already proven by `vision-insights-store` at `10.128.0.11:8090`). Firewall:
+`allow-openvino-vlm-api-internal` (internal-only, tcp:8092).
+
+Verified end-to-end before this config was written (independent scratch DSH
+profile on `linkhealth-vm2`, same plugin/version/config, no other plugins
+loaded) — see [infra/openvino-vlm-kit/README.md](../infra/openvino-vlm-kit/README.md)
+for the model-side smoke test transcript. Expect the local backend to be
+noticeably slower than the cloud fallback it now takes priority over (~46s,
+CPU-only 4.2B-parameter inference vs. a few seconds for the cloud engine) —
+that's the known cost of a private, self-hosted, non-rate-limited backend,
+not a routing bug. If `openvino-vlm-api` on the vision VM is ever down, the
+chain gracefully falls through to the same free cloud engine that already
+worked before this change — no user-facing failure mode, just slower vs.
+faster.
+
+Demo (once deployed): open the model picker on the live profile, select
+"DeepSeek + 自动识图", attach an image, ask about it.
 
 Rollback:
 

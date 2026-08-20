@@ -65,7 +65,13 @@ jobs:
           # undici) into the profile node_modules. Not saved to package.json —
           # the profile's bundles stay the stock dsh ones. Order matters: npm
           # install first, then the GUI symlink, so npm never prunes it.
-          (cd dist/profile && npm install dsh-vision-router@1.2.2 --no-save --no-package-lock --no-audit --no-fund)
+          # Pinned to a version we've actually tested, not "latest" — this
+          # plugin ships new releases every day or two, so re-verify before
+          # bumping again. 1.2.2 (the original 2026-08-17 pin) predates the
+          # httpProviders/local-backend feature (added in the plugin's own
+          # v1.5.0) entirely — see docs/deployment-gcp.md's vision
+          # multimodality section for why 1.7.0 is required here.
+          (cd dist/profile && npm install dsh-vision-router@1.7.0 --no-save --no-package-lock --no-audit --no-fund)
           # relative symlink — keeps the release directory self-contained
           ln -s ../plugins/dsh-linkhealth-gui-plugin dist/profile/node_modules/dsh-linkhealth-gui-plugin
           tar -czf "linkhealth-${SHA}.tar.gz" -C dist profile

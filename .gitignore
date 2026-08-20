@@ -29,5 +29,12 @@ infra/vision-insights-store/*.db
 infra/vision-insights-store/*.db-shm
 infra/vision-insights-store/*.db-wal
 
+# Local venv + downloaded model weights for the Phi-3.5-vision OpenVINO kit
+# (infra/openvino-vlm-kit) — multi-GB IR weights pulled straight from the
+# OpenVINO HF org, provisioned the same way directly on the deploy VM, not
+# shipped here.
+infra/openvino-vlm-kit/venv/
+infra/openvino-vlm-kit/model/
+
 # Runtime data written by plugins into the workspace root (e.g. triage log)
 /data/

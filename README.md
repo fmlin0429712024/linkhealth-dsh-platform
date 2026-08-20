@@ -41,6 +41,19 @@ this repo only carries the DSH plugin layer:
 | [`plugins/dsh-vision-insights-plugin`](plugins/dsh-vision-insights-plugin) | host | 🟢 active | Reads structured events (zone occupancy, retail item add/remove) from a separate OpenVINO edge app's data source over HTTP — `query_vision_events` and `query_checkout_events`, both deterministic-facts-in/LLM-narrates-only. Deployed and verified in production. |
 | [`plugins/dsh-linkhealth-gui-plugin`](plugins/dsh-linkhealth-gui-plugin) | client | 🟡 early | Branded front door for the DSH web UI — theme, sidebar capability launcher, Settings showcase. Purely additive/reversible; presents all capabilities above without importing any of them (zero business coupling). Two of its four features are still stubs — see its own README. |
 
+The four packages above are **built by us**, live under `plugins/`, and are
+covered by the CI/contract-check pipeline. The deployed profile also adopts
+plugins **from the wider DSH ecosystem** rather than reimplementing
+equivalent functionality — these aren't packages in this repo (no
+`plugins/` folder, no README/tests of ours to maintain) and are declared
+only in `deploy/profile-linkhealth/cordis.patch.yml`. See
+[docs/plugin-development.md](docs/plugin-development.md#adopting-an-existing-plugin-vs-building-a-new-one)
+for the convention on when to adopt vs. build:
+
+| Plugin | Origin | What it does |
+| --- | --- | --- |
+| [`dsh-vision-router`](https://github.com/ysr666/dsh-vision-router) | adopted (npm, third-party) | Gives the text-only DeepSeek main model "eyes": detects image attachments and routes them to a vision backend, then feeds the description back into the conversation. Configured to call a locally-deployed Phi-3.5-vision model — see [docs/deployment-gcp.md](docs/deployment-gcp.md) for the integration wiring. |
+
 All data bundled in this repo (enquiry examples, SOP rule stores, patient gold
 sets) is **synthetic/fictional** — no real patient, provider, or client data.
 

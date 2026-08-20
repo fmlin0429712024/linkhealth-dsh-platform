@@ -41,9 +41,27 @@
 # models — built-in free vision chain (no key) + pixel-level vision tools
 # (Q&A, grounding, crop, pixel diff, colors, OCR, SVG trace, cutout, screenshots)
 # + a deepseek-vision twin route. Config editable later in Settings → 插件配置.
+#
+# httpProviders below fills a previously-empty slot in the plugin's own
+# fixed backend priority chain (registered adapters → local Ollama → local
+# LM Studio → httpProviders → free OVH cloud fallback, always last) — this
+# does not create a second path or touch the plugin's routing logic, it
+# just points that one slot at our own locally-deployed vision model
+# instead of leaving it empty. The "DeepSeek + 自动识图" model-picker entry
+# is unchanged; it now prefers this local backend over the free cloud one
+# it already used, and falls back to that same cloud engine if this is
+# ever unreachable. See docs/deployment-gcp.md's vision multimodality
+# section for the full picture (network path, why the version bump above
+# it was required, verification evidence).
 - insert:
     - id: vision-router
       name: 'dsh-vision-router'
+      config:
+        httpProviders:
+          - name: phi35-vision-local
+            baseURL: 'http://10.128.0.11:8092/v1'
+            model: 'phi-3.5-vision-local'
+            maxTokens: 200
 
 # 放宽附件图片限制（dsh-vision-router 建议值：20MB / 1 亿像素），大图可过审。
 - id: attachment-local
