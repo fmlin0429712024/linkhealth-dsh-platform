@@ -32,9 +32,51 @@ this repo only carries the DSH plugin layer:
 - [`clinical-documentation-audit-poc`](https://github.com/fmlin0429712024/clinical-documentation-audit-poc) —
   the CDI audit system and its `.agents/skills` source of truth.
 
-## Architecture: bundle → profile → plugin
+## Architecture
 
-Three distinct layers, easy to conflate but worth keeping separate:
+### Enterprise view: agentic layer, decoupled from data and models
+
+The bigger picture this repo is one piece of: an agentic layer (DSH) that
+never directly imports a model process or a data store — every edge/IoT
+data source and every locally-served model sits behind its own HTTP
+boundary, swappable without touching agentic-layer code.
+
+```mermaid
+graph TB
+    subgraph Agentic["Agentic Layer — DSH (linkhealth-dsh-platform)"]
+        Profile["Profile: linkhealth / linkhealth-headless (planned)"]
+        Bundle["Bundle: interaction-mode + domain-capability"]
+        Plugin["Plugin: triage, CDI, vision-insights, vision-router, ..."]
+        Profile --> Bundle --> Plugin
+    end
+
+    subgraph Data["Data Layer (infra/, decoupled)"]
+        Edge["OpenVINO edge apps (IoT / Industry 4.0)<br/>openvino-queue-kit, openvino-self-checkout (YOLOv8m)"]
+        Store["vision-insights-store<br/>SQLite + FastAPI — structured, 'ontology-like' read layer<br/>(simple today, room to grow into a real ontology layer)"]
+        Edge -->|writes JSONL| Store
+    end
+
+    subgraph Model["Model-Serving Layer (infra/, decoupled)"]
+        VLM["openvino-vlm-kit<br/>Phi-3.5-vision (OpenVINO)<br/>OpenAI-compatible API, on-demand inference, no stored history"]
+    end
+
+    Plugin -->|HTTP only| Store
+    Plugin -->|HTTP only| VLM
+```
+
+**Data layer vs. model-serving layer are deliberately two different boxes**,
+not one "OpenVINO layer": the data layer answers queries against *stored,
+structured facts* (what happened, when); the model-serving layer answers
+*on-demand inference* (what's in this image, right now) and keeps no
+history. Both are reachable from the agentic layer, but only over HTTP —
+either could be swapped, moved, or taken down without changing a line of
+plugin code (verified: the vision-router config gracefully falls back to a
+cloud engine if the model-serving layer is ever unreachable).
+
+### Inside the agentic layer: bundle → profile → plugin
+
+Zooming into the "Agentic Layer" box above — three distinct layers, easy to
+conflate but worth keeping separate:
 
 ```mermaid
 graph TD
